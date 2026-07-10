@@ -385,13 +385,15 @@ class RegHive:
                         found = True
                         break
                 if not found:
-                    print(f"[!] Key tidak ditemukan: {'\\'.join(parts)}")
+                    missing_path = "\\".join(parts)
+                    print(f"[!] Key tidak ditemukan: {missing_path}")
                     return result
 
         self._collect_tree(current_nk, result)
 
         if current_path:
-            print(f"[*] Path: {'\\'.join(current_path)}")
+            display_path = "\\".join(current_path)
+            print(f"[*] Path: {display_path}")
         return result
 
     def _collect_tree(self, nk, result):
