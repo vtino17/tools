@@ -64,7 +64,7 @@ def build_dns_response(query_data, redirect_ip, original_name):
 def sniff_dns_and_spoof(interface, redirect_map, verbose=True):
     """Sniff DNS queries and send spoofed responses"""
     try:
-        from scapy.all import sniff, UDP, IP, DNS, DNSQR, sendp
+        from scapy.all import sniff, UDP, IP, DNS, DNSQR, DNSRR, sendp
     except ImportError:
         print("[!] scapy not installed. Run: pip install scapy")
         return

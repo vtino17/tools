@@ -21,7 +21,7 @@ SQUID_FUZZ_PAYLOADS = [
     "1' ORDER BY 1--",
     "1 UNION SELECT NULL--",
     "../etc/passwd",
-    "..\..\..\windows\win.ini",
+    "..\\..\\..\\windows\\win.ini",
     "|/bin/cat /etc/passwd",
     "; cat /etc/passwd",
     "&& cat /etc/passwd",

@@ -52,7 +52,6 @@ def scan_linux(args):
     start_time = time.time()
 
     def flush_output():
-        nonlocal devices
         while True:
             line = proc.stdout.readline()
             if not line:
