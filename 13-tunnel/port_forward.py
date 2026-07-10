@@ -134,6 +134,7 @@ def mode_local(bind_addr, local_port, target_host, remote_port):
 
 def mode_remote(bind_addr, local_port, server_host, server_port):
     socks = []
+
     def handle_client(client, addr):
         try:
             while True:
@@ -270,10 +271,15 @@ class SocksProxy:
             remote.settimeout(15)
             remote.connect((target_addr, target_port))
             bind_addr = remote.getsockname()
-            reply = struct.pack("!BBBBIH", SOCKS_VERSION, SOCKS_REPLY_SUCCEEDED, 0,
-                                SOCKS_ATYP_IPV4,
-                                struct.unpack("!I", socket.inet_aton(bind_addr[0]))[0],
-                                bind_addr[1])
+            reply = struct.pack(
+                "!BBBBIH",
+                SOCKS_VERSION,
+                SOCKS_REPLY_SUCCEEDED,
+                0,
+                SOCKS_ATYP_IPV4,
+                struct.unpack("!I", socket.inet_aton(bind_addr[0]))[0],
+                bind_addr[1],
+            )
             client.sendall(reply)
             remote.settimeout(None)
         except Exception as e:
@@ -303,8 +309,9 @@ class SocksProxy:
 
     def _send_reply(self, sock, reply_code):
         try:
-            sock.sendall(struct.pack("!BBBBIH", SOCKS_VERSION, reply_code, 0,
-                                     SOCKS_ATYP_IPV4, 0, 0))
+            sock.sendall(
+                struct.pack("!BBBBIH", SOCKS_VERSION, reply_code, 0, SOCKS_ATYP_IPV4, 0, 0)
+            )
         except Exception:
             pass
 
@@ -314,8 +321,12 @@ def main():
         description="TCP Port Forwarder - Pemforward lalu lintas TCP",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--mode", choices=["local", "remote", "socks"], required=True,
-                        help="Mode forwarding (local/remote/socks)")
+    parser.add_argument(
+        "--mode",
+        choices=["local", "remote", "socks"],
+        required=True,
+        help="Mode forwarding (local/remote/socks)",
+    )
     parser.add_argument("--bind", default="0.0.0.0", help="Alamat bind lokal (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, required=True, help="Port lokal")
     parser.add_argument("--target", help="Host target (untuk mode local/remote)")

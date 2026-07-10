@@ -73,15 +73,24 @@ KEY_INTEREST_PATHS = {
     ],
     "USRCLASS.DAT": [
         ("Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache", "MuiCache"),
-        ("Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository", "App Repository"),
+        (
+            "Local Settings\\Software\\Microsoft\\Windows\\CurrentVersion\\AppModel\\Repository",
+            "App Repository",
+        ),
     ],
 }
 
 NETWORK_KEYS = {
     "SOFTWARE": [
         ("Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Profiles", "Network Profiles"),
-        ("Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Unmanaged", "Networks (Unmanaged)"),
-        ("Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Managed", "Networks (Managed)"),
+        (
+            "Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Unmanaged",
+            "Networks (Unmanaged)",
+        ),
+        (
+            "Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Signatures\\Managed",
+            "Networks (Managed)",
+        ),
     ],
 }
 
@@ -118,6 +127,7 @@ def guess_hive_type(filename):
 
 class RegHive:
     """Parser registry hive file format."""
+
     def __init__(self, filepath):
         self.filepath = filepath
         self.fh = None
@@ -223,7 +233,9 @@ class RegHive:
             "num_subkeys": num_subkeys,
             "num_values": num_values,
             "parent_offset": parent_offset if not is_root else None,
-            "subkeys_list_offset": subkeys_list_offset + 0x1000 if subkeys_list_offset != -1 else None,
+            "subkeys_list_offset": (
+                subkeys_list_offset + 0x1000 if subkeys_list_offset != -1 else None
+            ),
             "values_list_offset": values_list_offset + 0x1000 if values_list_offset != -1 else None,
             "sk_offset": sk_offset,
             "is_root": is_root,
@@ -251,7 +263,11 @@ class RegHive:
         name_offset = offset + 4 + 20
 
         self.fh.seek(name_offset)
-        name = self.fh.read(name_len).decode("utf-16-le", errors="replace") if name_len > 0 else "(Default)"
+        name = (
+            self.fh.read(name_len).decode("utf-16-le", errors="replace")
+            if name_len > 0
+            else "(Default)"
+        )
 
         value = self._read_value_data(data_offset_raw, data_length, value_type)
 
@@ -383,7 +399,11 @@ class RegHive:
         sub_offsets = self._parse_lf(nk["subkeys_list_offset"])
         values = self._parse_value_list(nk["values_list_offset"], nk["num_values"])
 
-        key_info = {"name": nk["name"], "timestamp": nk["timestamp"], "subkey_count": nk["num_subkeys"]}
+        key_info = {
+            "name": nk["name"],
+            "timestamp": nk["timestamp"],
+            "subkey_count": nk["num_subkeys"],
+        }
         result["keys"].append(key_info)
 
         result["values"].extend(values)
@@ -414,7 +434,11 @@ class RegHive:
             "hive_name": self._hive_name,
             "timestamp": str(self._timestamp),
             "keys": [
-                {"name": k["name"], "timestamp": str(k["timestamp"]), "subkey_count": k["subkey_count"]}
+                {
+                    "name": k["name"],
+                    "timestamp": str(k["timestamp"]),
+                    "subkey_count": k["subkey_count"],
+                }
                 for k in data["keys"]
             ],
             "values": [
@@ -430,6 +454,7 @@ class RegHive:
     def dump_csv(self, output_path):
         """Export hasil ke CSV."""
         import csv
+
         data = self.dump_all()
         with open(output_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -438,7 +463,9 @@ class RegHive:
             for k in data["keys"]:
                 current_key = k["name"]
             for v in data["values"]:
-                writer.writerow([current_key, v["name"], v["type_name"], v["value"], str(self._timestamp)])
+                writer.writerow(
+                    [current_key, v["name"], v["type_name"], v["value"], str(self._timestamp)]
+                )
         print(f"[+] CSV disimpan ke: {output_path}")
 
 
@@ -524,14 +551,22 @@ Contoh:
   %(prog)s --hive SOFTWARE --all --output report.csv
         """,
     )
-    parser.add_argument("--hive", type=str, required=True,
-                        help="File hive registry (SAM, SYSTEM, SOFTWARE, NTUSER.DAT, USRCLASS.DAT, SECURITY)")
-    parser.add_argument("--key", type=str, default="",
-                        help="Path key spesifik (contoh: Microsoft\\Windows\\CurrentVersion\\Run)")
-    parser.add_argument("--all", action="store_true",
-                        help="Dump seluruh isi hive")
-    parser.add_argument("--output", type=str, default="",
-                        help="File output (JSON atau CSV, berdasarkan ekstensi)")
+    parser.add_argument(
+        "--hive",
+        type=str,
+        required=True,
+        help="File hive registry (SAM, SYSTEM, SOFTWARE, NTUSER.DAT, USRCLASS.DAT, SECURITY)",
+    )
+    parser.add_argument(
+        "--key",
+        type=str,
+        default="",
+        help="Path key spesifik (contoh: Microsoft\\Windows\\CurrentVersion\\Run)",
+    )
+    parser.add_argument("--all", action="store_true", help="Dump seluruh isi hive")
+    parser.add_argument(
+        "--output", type=str, default="", help="File output (JSON atau CSV, berdasarkan ekstensi)"
+    )
 
     args = parser.parse_args()
 
@@ -666,6 +701,7 @@ Contoh:
     except Exception as e:
         print(f"[!] Error: {e}")
         import traceback
+
         traceback.print_exc()
     finally:
         hive.close()

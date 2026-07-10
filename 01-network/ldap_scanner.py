@@ -26,6 +26,7 @@ from collections import defaultdict
 try:
     import ldap
     from ldap.controls import SimplePagedResultsControl
+
     HAS_LDAP = True
 except ImportError:
     HAS_LDAP = False
@@ -49,27 +50,64 @@ def log_warn(msg: str) -> None:
 
 DEFAULT_ATTRIBUTES = {
     "user": [
-        "cn", "sAMAccountName", "userPrincipalName", "displayName",
-        "mail", "description", "memberOf", "userAccountControl",
-        "lastLogon", "pwdLastSet", "whenCreated", "whenChanged",
-        "distinguishedName", "objectSid", "primaryGroupID",
+        "cn",
+        "sAMAccountName",
+        "userPrincipalName",
+        "displayName",
+        "mail",
+        "description",
+        "memberOf",
+        "userAccountControl",
+        "lastLogon",
+        "pwdLastSet",
+        "whenCreated",
+        "whenChanged",
+        "distinguishedName",
+        "objectSid",
+        "primaryGroupID",
     ],
     "group": [
-        "cn", "sAMAccountName", "description", "member", "memberOf",
-        "groupType", "distinguishedName", "whenCreated",
+        "cn",
+        "sAMAccountName",
+        "description",
+        "member",
+        "memberOf",
+        "groupType",
+        "distinguishedName",
+        "whenCreated",
     ],
     "computer": [
-        "cn", "sAMAccountName", "operatingSystem", "operatingSystemVersion",
-        "dNSHostName", "lastLogonTimestamp", "whenCreated", "distinguishedName",
+        "cn",
+        "sAMAccountName",
+        "operatingSystem",
+        "operatingSystemVersion",
+        "dNSHostName",
+        "lastLogonTimestamp",
+        "whenCreated",
+        "distinguishedName",
     ],
     "organizationalUnit": [
-        "ou", "name", "description", "distinguishedName", "whenCreated",
+        "ou",
+        "name",
+        "description",
+        "distinguishedName",
+        "whenCreated",
     ],
     "domain": [
-        "name", "distinguishedName", "objectSid", "creationTime",
-        "domainFunctionality", "forestFunctionality", "lockoutDuration",
-        "lockOutObservationWindow", "lockoutThreshold", "maxPwdAge",
-        "minPwdAge", "minPwdLength", "pwdHistoryLength", "pwdProperties",
+        "name",
+        "distinguishedName",
+        "objectSid",
+        "creationTime",
+        "domainFunctionality",
+        "forestFunctionality",
+        "lockoutDuration",
+        "lockOutObservationWindow",
+        "lockoutThreshold",
+        "maxPwdAge",
+        "minPwdAge",
+        "minPwdLength",
+        "pwdHistoryLength",
+        "pwdProperties",
     ],
 }
 
@@ -77,6 +115,7 @@ DEFAULT_ATTRIBUTES = {
 # ---------------------------------------------------------------------------
 # Raw BER/DER encoding/decoding helpers (pure-socket fallback)
 # ---------------------------------------------------------------------------
+
 
 def ber_decode_length(data: bytes, pos: int) -> tuple[int, int]:
     length = data[pos]
@@ -95,7 +134,7 @@ def ber_decode_integer(data: bytes, pos: int) -> tuple[int, int]:
     assert data[pos] == 0x02, f"Expected INTEGER tag, got {data[pos]:#x}"
     pos += 1
     length, pos = ber_decode_length(data, pos)
-    value = int.from_bytes(data[pos:pos + length], "big", signed=True)
+    value = int.from_bytes(data[pos : pos + length], "big", signed=True)
     return value, pos + length
 
 
@@ -103,7 +142,7 @@ def ber_decode_string(data: bytes, pos: int) -> tuple[str, int]:
     assert data[pos] in (0x04, 0x0C), f"Expected string tag, got {data[pos]:#x}"
     pos += 1
     length, pos = ber_decode_length(data, pos)
-    value = data[pos:pos + length].decode("utf-8", errors="replace")
+    value = data[pos : pos + length].decode("utf-8", errors="replace")
     return value, pos + length
 
 
@@ -111,7 +150,7 @@ def ber_decode_sequence(data: bytes, pos: int) -> tuple[bytes, int]:
     assert data[pos] == 0x30, f"Expected SEQUENCE tag, got {data[pos]:#x}"
     pos += 1
     length, pos = ber_decode_length(data, pos)
-    return data[pos:pos + length], pos + length
+    return data[pos : pos + length], pos + length
 
 
 def encode_ber_length(length: int) -> bytes:
@@ -151,8 +190,10 @@ def build_ldap_bind_request(version: int = 3, dn: str = "", password: str = "") 
     version_tlv = encode_ber_integer(version)
     dn_bytes = dn.encode("utf-8")
     name_tlv = encode_ber_octet_string(dn_bytes)
-    auth_tlv = b"\xa0" + encode_ber_length(2) + encode_ber_octet_string(
-        password.encode("utf-8") if password else b""
+    auth_tlv = (
+        b"\xa0"
+        + encode_ber_length(2)
+        + encode_ber_octet_string(password.encode("utf-8") if password else b"")
     )
     bind_proto = version_tlv + name_tlv + auth_tlv
     bind_pdu = b"\x60" + encode_ber_length(len(bind_proto)) + bind_proto
@@ -211,7 +252,7 @@ def decode_ldap_search_result(data: bytes) -> list[dict[str, list[str]]]:
         if protocol_op == 0x64:
             pos = 0
             _len, pos = ber_decode_length(inner_seq, pos)
-            op_data = inner_seq[pos:pos + _len]
+            op_data = inner_seq[pos : pos + _len]
             op_pos = 0
             dn, op_pos = ber_decode_string(op_data, op_pos)
 
@@ -272,8 +313,14 @@ def raw_ldap_bind(target: str, port: int, use_ssl: bool, dn: str = "", password:
 
 
 def raw_ldap_search(
-    target: str, port: int, use_ssl: bool, base_dn: str, filter_str: str,
-    dn: str = "", password: str = "", attributes: list[str] | None = None,
+    target: str,
+    port: int,
+    use_ssl: bool,
+    base_dn: str,
+    filter_str: str,
+    dn: str = "",
+    password: str = "",
+    attributes: list[str] | None = None,
 ) -> list[dict[str, list[str]]]:
     try:
         sock = socket.create_connection((target, port), timeout=10)
@@ -290,7 +337,9 @@ def raw_ldap_search(
             sock.close()
             return []
 
-        search_req = build_ldap_search_request(base_dn, filter_str, scope=2, attributes=attributes, msg_id=2)
+        search_req = build_ldap_search_request(
+            base_dn, filter_str, scope=2, attributes=attributes, msg_id=2
+        )
         sock.send(search_req)
         all_data = b""
         while True:
@@ -312,6 +361,7 @@ def raw_ldap_search(
 # python-ldap based scanner
 # ---------------------------------------------------------------------------
 
+
 def search_paged(conn, base_dn: str, filter_str: str, attrs: list[str]) -> list[dict]:
     results = []
     try:
@@ -324,11 +374,15 @@ def search_paged(conn, base_dn: str, filter_str: str, attrs: list[str]) -> list[
                 for k, v in entry.items():
                     item[k] = [x.decode() if isinstance(x, bytes) else str(x) for x in v]
                 results.append(item)
-            pctrls = [c for c in serverctrls if c.controlType == SimplePagedResultsControl.controlType]
+            pctrls = [
+                c for c in serverctrls if c.controlType == SimplePagedResultsControl.controlType
+            ]
             if not pctrls or not pctrls[0].cookie:
                 break
             lc.cookie = pctrls[0].cookie
-            msgid = conn.search_ext(base_dn, ldap.SCOPE_SUBTREE, filter_str, attrs, serverctrls=[lc])
+            msgid = conn.search_ext(
+                base_dn, ldap.SCOPE_SUBTREE, filter_str, attrs, serverctrls=[lc]
+            )
     except Exception:
         try:
             raw = conn.search_s(base_dn, ldap.SCOPE_SUBTREE, filter_str, attrs)
@@ -388,7 +442,9 @@ def scan_python_ldap(args: argparse.Namespace) -> dict:
                 return result
 
         root_dse = conn.search_s(
-            "", ldap.SCOPE_BASE, "(objectClass=*)",
+            "",
+            ldap.SCOPE_BASE,
+            "(objectClass=*)",
             ["*", "+", "supportedSASLMechanisms", "supportedExtension"],
         )
         if root_dse:
@@ -434,7 +490,9 @@ def scan_python_ldap(args: argparse.Namespace) -> dict:
 
         log_info("Mencari Domain Admins...")
         try:
-            da_filter = "(&(objectClass=user)(memberOf=CN=Domain Admins,CN=Users,{}))".format(base_dn)
+            da_filter = "(&(objectClass=user)(memberOf=CN=Domain Admins,CN=Users,{}))".format(
+                base_dn
+            )
             da_entries = search_paged(conn, base_dn, da_filter, DEFAULT_ATTRIBUTES["user"])
             result["domain_admins"] = da_entries
             if da_entries:
@@ -444,7 +502,12 @@ def scan_python_ldap(args: argparse.Namespace) -> dict:
 
         log_info("Mencari Service Accounts...")
         try:
-            sa_entries = search_paged(conn, base_dn, "(&(objectClass=user)(servicePrincipalName=*))", DEFAULT_ATTRIBUTES["user"])
+            sa_entries = search_paged(
+                conn,
+                base_dn,
+                "(&(objectClass=user)(servicePrincipalName=*))",
+                DEFAULT_ATTRIBUTES["user"],
+            )
             result["service_accounts"] = sa_entries
             if sa_entries:
                 log_success(f"  Service accounts: {len(sa_entries)} ditemukan")
@@ -453,7 +516,9 @@ def scan_python_ldap(args: argparse.Namespace) -> dict:
 
         log_info("Mengambil password policy...")
         try:
-            pp = conn.search_s(base_dn, ldap.SCOPE_BASE, "(objectClass=*)", DEFAULT_ATTRIBUTES["domain"])
+            pp = conn.search_s(
+                base_dn, ldap.SCOPE_BASE, "(objectClass=*)", DEFAULT_ATTRIBUTES["domain"]
+            )
             if pp:
                 entry = pp[0][1]
                 result["password_policy"] = {
@@ -512,14 +577,22 @@ def scan_raw_socket(args: argparse.Namespace) -> dict:
 
     guessed_nc = f"dc={',dc='.join(args.target.split('.'))}"
     entries = raw_ldap_search(
-        args.target, port, args.ssl, "", "(objectClass=*)",
-        dn, password, ["namingContexts"],
+        args.target,
+        port,
+        args.ssl,
+        "",
+        "(objectClass=*)",
+        dn,
+        password,
+        ["namingContexts"],
     )
     if entries and entries[0].get("namingContexts"):
         result["naming_contexts"] = entries[0].get("namingContexts", [])
         log_success(f"Naming contexts: {result['naming_contexts']}")
 
-    base_dn = args.base or (result["naming_contexts"][0] if result["naming_contexts"] else guessed_nc)
+    base_dn = args.base or (
+        result["naming_contexts"][0] if result["naming_contexts"] else guessed_nc
+    )
 
     searches = [
         ("users", "(objectClass=user)", ["cn", "sAMAccountName", "mail"]),
@@ -529,7 +602,9 @@ def scan_raw_socket(args: argparse.Namespace) -> dict:
 
     for label, filter_str, attrs in searches:
         log_info(f"Mencari {label}...")
-        entries_found = raw_ldap_search(args.target, port, args.ssl, base_dn, filter_str, dn, password, attrs)
+        entries_found = raw_ldap_search(
+            args.target, port, args.ssl, base_dn, filter_str, dn, password, attrs
+        )
         result[label] = entries_found
         log_success(f"  {label}: {len(entries_found)} ditemukan")
 
@@ -539,6 +614,7 @@ def scan_raw_socket(args: argparse.Namespace) -> dict:
 # ---------------------------------------------------------------------------
 # Display helpers
 # ---------------------------------------------------------------------------
+
 
 def display_results(result: dict) -> None:
     print(f"\n{'=' * 60}")
@@ -637,6 +713,7 @@ def display_results(result: dict) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="LDAP Enumeration Tool",
@@ -651,13 +728,17 @@ Contoh:
         """,
     )
     parser.add_argument("--target", "-t", required=True, help="Target LDAP server (IP/hostname)")
-    parser.add_argument("--port", "-p", type=int, help="Port LDAP (default: 389, atau 636 dengan --ssl)")
+    parser.add_argument(
+        "--port", "-p", type=int, help="Port LDAP (default: 389, atau 636 dengan --ssl)"
+    )
     parser.add_argument("--username", "-u", help="Username untuk authenticated bind")
     parser.add_argument("--password", "-P", help="Password untuk authenticated bind")
     parser.add_argument("--base", "-b", help="Base DN (default: auto-detect)")
     parser.add_argument("--filter", "-f", help="Custom LDAP filter (e.g. (objectClass=user))")
     parser.add_argument("--ssl", action="store_true", help="Gunakan LDAPS (port 636)")
-    parser.add_argument("--timeout", type=float, default=10.0, help="Timeout koneksi (default: 10s)")
+    parser.add_argument(
+        "--timeout", type=float, default=10.0, help="Timeout koneksi (default: 10s)"
+    )
     args = parser.parse_args()
 
     if HAS_LDAP:

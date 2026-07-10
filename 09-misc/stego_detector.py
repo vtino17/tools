@@ -14,7 +14,6 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-
 SUSPICIOUS_STRINGS = [
     r"https?://[\w./?&=%-]+",
     r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
@@ -115,13 +114,15 @@ def analyze_lsb(filepath, fmt):
     printable_count = sum(v for k, v in byte_counts.items() if 32 <= k <= 126)
     printable_ratio = printable_count / max(total_bytes, 1)
 
-    findings.append({
-        "type": "lsb",
-        "lsb_bytes_analyzed": total_bytes,
-        "printable_ratio": round(printable_ratio * 100, 2),
-        "unique_bytes": len(byte_counts),
-        "top_bytes": byte_counts.most_common(10),
-    })
+    findings.append(
+        {
+            "type": "lsb",
+            "lsb_bytes_analyzed": total_bytes,
+            "printable_ratio": round(printable_ratio * 100, 2),
+            "unique_bytes": len(byte_counts),
+            "top_bytes": byte_counts.most_common(10),
+        }
+    )
 
     if printable_ratio > 0.70:
         findings[-1]["flag"] = "High printable character ratio in LSB — possible text hidden"
@@ -152,14 +153,16 @@ def chi_square_test(filepath, fmt):
     deviations = []
 
     for i in range(0, len(all_lsbs), chunk_size):
-        chunk = all_lsbs[i:i + chunk_size]
+        chunk = all_lsbs[i : i + chunk_size]
         if len(chunk) < chunk_size:
             continue
 
         zeros = sum(1 for b in chunk if b == 0)
         ones = len(chunk) - zeros
         expected = len(chunk) / 2
-        chi_sq = ((zeros - expected) ** 2 + (ones - expected) ** 2) / expected if expected > 0 else 0
+        chi_sq = (
+            ((zeros - expected) ** 2 + (ones - expected) ** 2) / expected if expected > 0 else 0
+        )
         deviations.append(chi_sq)
 
     avg_chi = sum(deviations) / max(len(deviations), 1)
@@ -209,7 +212,14 @@ def analyze_histogram(filepath, fmt):
         spikes = []
         for val, count in histogram.items():
             if count > avg * 3:
-                spikes.append({"value": val, "count": count, "channel": channel_name, "ratio": round(count / avg, 2)})
+                spikes.append(
+                    {
+                        "value": val,
+                        "count": count,
+                        "channel": channel_name,
+                        "ratio": round(count / avg, 2),
+                    }
+                )
         return spikes
 
     spikes = []
@@ -250,20 +260,24 @@ def scan_eof(filepath, fmt):
     if img_end > 0 and img_end < len(data):
         trailing = data[img_end:]
         trailing_size = len(trailing)
-        findings.append({
-            "type": "eof",
-            "bytes_after_image": trailing_size,
-            "found_payloads": [],
-        })
+        findings.append(
+            {
+                "type": "eof",
+                "bytes_after_image": trailing_size,
+                "found_payloads": [],
+            }
+        )
 
         for signature, desc in EOF_MARKERS.items():
             offset = trailing.find(signature)
             if offset != -1:
-                findings[-1]["found_payloads"].append({
-                    "offset": offset,
-                    "type": desc,
-                    "size": trailing_size - offset,
-                })
+                findings[-1]["found_payloads"].append(
+                    {
+                        "offset": offset,
+                        "type": desc,
+                        "size": trailing_size - offset,
+                    }
+                )
 
     return findings
 
@@ -317,28 +331,41 @@ def check_metadata(filepath):
             tag_name = TAGS.get(tag_id, str(tag_id))
             val_str = str(value)
 
-            if any(kw in tag_name.lower() for kw in ("comment", "usercomment", "image_description")) and len(val_str) > 100:
-                suspicious_exif.append({"tag": tag_name, "value_preview": val_str[:120], "length": len(val_str)})
+            if (
+                any(
+                    kw in tag_name.lower() for kw in ("comment", "usercomment", "image_description")
+                )
+                and len(val_str) > 100
+            ):
+                suspicious_exif.append(
+                    {"tag": tag_name, "value_preview": val_str[:120], "length": len(val_str)}
+                )
 
             if len(val_str) > 500:
-                suspicious_exif.append({"tag": tag_name, "value_preview": val_str[:120], "length": len(val_str)})
+                suspicious_exif.append(
+                    {"tag": tag_name, "value_preview": val_str[:120], "length": len(val_str)}
+                )
 
     if suspicious_exif:
-        findings.append({
-            "type": "exif",
-            "suspicious_tags": suspicious_exif,
-        })
+        findings.append(
+            {
+                "type": "exif",
+                "suspicious_tags": suspicious_exif,
+            }
+        )
 
     try:
         if hasattr(img, "text") and img.text:
             for key, val in img.text.items():
                 if len(str(val)) > 200:
-                    findings.append({
-                        "type": "png_text",
-                        "key": key,
-                        "value_preview": str(val)[:120],
-                        "length": len(str(val)),
-                    })
+                    findings.append(
+                        {
+                            "type": "png_text",
+                            "key": key,
+                            "value_preview": str(val)[:120],
+                            "length": len(str(val)),
+                        }
+                    )
     except Exception:
         pass
 
@@ -360,7 +387,9 @@ def verdict(all_findings):
                 evidence.append(f"LSB printable ratio high ({ratio}%) — text hidden in LSB")
             elif ratio < 15:
                 score += 15
-                evidence.append(f"LSB printable ratio very low ({ratio}%) — possible encrypted payload")
+                evidence.append(
+                    f"LSB printable ratio very low ({ratio}%) — possible encrypted payload"
+                )
 
         if f.get("type") == "chi_square":
             avg = f.get("avg_chi_square", 0)
@@ -480,7 +509,9 @@ Examples:
         print(f"  Color spikes      : {hist_result['spikes_found']}")
         print(f"  LSB pair bias     : {hist_result['lsb_pair_bias']}%")
         for s in hist_result["spikes"]:
-            print(f"    Channel {s['channel']} value {s['value']} ({s['count']} pixels, {s['ratio']}x avg)")
+            print(
+                f"    Channel {s['channel']} value {s['value']} ({s['count']} pixels, {s['ratio']}x avg)"
+            )
 
     print(f"\n{'─' * 70}")
     print("  [4] EOF Marker Detection")

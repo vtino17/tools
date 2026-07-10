@@ -1,4 +1,5 @@
 """Domain & IP reconnaissance: WHOIS, DNS, subdomain, SSL, HTTP header."""
+
 import asyncio
 import socket
 import ssl
@@ -66,12 +67,14 @@ async def enumerate_subdomains(domain: str) -> List[str]:
 def whois_lookup(domain: str) -> Dict[str, Any]:
     try:
         w = whois.whois(domain)
+
         def _fmt(v):
             if isinstance(v, list):
                 return [str(x) for x in v]
             if isinstance(v, datetime):
                 return v.isoformat()
             return str(v) if v is not None else None
+
         return {
             "registrar": _fmt(w.registrar),
             "creation_date": _fmt(w.creation_date),
@@ -141,7 +144,9 @@ async def http_headers(domain: str) -> Dict[str, Any]:
     timeout = aiohttp.ClientTimeout(total=12)
     try:
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url, allow_redirects=True, headers={"User-Agent": random_ua()}) as r:
+            async with session.get(
+                url, allow_redirects=True, headers={"User-Agent": random_ua()}
+            ) as r:
                 return {
                     "final_url": str(r.url),
                     "status": r.status,
@@ -187,4 +192,3 @@ def run_domain_recon(domain: str, do_subdomain: bool = True) -> Dict[str, Any]:
             finally:
                 loop.close()
     return out
-

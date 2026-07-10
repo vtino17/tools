@@ -54,7 +54,7 @@ def encode_data(data, seq=0):
     encoded = base64.b32encode(data).decode().rstrip("=")
     chunks = []
     for i in range(0, len(encoded), CHUNK_SIZE):
-        chunk = encoded[i:i + CHUNK_SIZE]
+        chunk = encoded[i : i + CHUNK_SIZE]
         label = f"d{seq:04x}.{chunk}"
         if len(label) > MAX_LABEL:
             label = label[:MAX_LABEL]
@@ -67,7 +67,7 @@ def decode_query(qname, domain):
     base = qname.lower()
     suffix = f".{domain.lower()}"
     if base.endswith(suffix):
-        base = base[:-len(suffix)]
+        base = base[: -len(suffix)]
     labels = [l for l in base.split(".") if l and not l.startswith("d")]
     data_str = "".join(labels).upper()
     padding = 8 - (len(data_str) % 8)
@@ -102,14 +102,14 @@ def parse_dns_query(data):
                 pos += 2
                 break
             pos += 1
-            label = data[pos:pos + length]
+            label = data[pos : pos + length]
             qname_parts.append(label.decode(errors="ignore"))
             pos += length
         qname = ".".join(qname_parts)
         if pos + 4 <= len(data):
-            qtype = struct.unpack("!H", data[pos:pos + 2])[0]
+            qtype = struct.unpack("!H", data[pos : pos + 2])[0]
             pos += 2
-            qclass = struct.unpack("!H", data[pos:pos + 2])[0]
+            qclass = struct.unpack("!H", data[pos : pos + 2])[0]
             pos += 2
             return struct.unpack("!H", data[0:2])[0], qname, qtype
     except Exception:
@@ -193,6 +193,7 @@ class DNSServer:
             print_info(f"[SHELL] {addr} $ {entry}")
             try:
                 import subprocess
+
                 result = subprocess.run(entry, shell=True, capture_output=True, timeout=30)
                 output = result.stdout + result.stderr
             except Exception as e:
@@ -292,14 +293,14 @@ class DNSClient:
                     pos += 1 + length
                 pos += 10
                 if pos + 2 <= len(data):
-                    rdlength = struct.unpack("!H", data[pos:pos + 2])[0]
+                    rdlength = struct.unpack("!H", data[pos : pos + 2])[0]
                     pos += 2
                     if pos + rdlength <= len(data):
-                        txt_data = data[pos:pos + rdlength]
+                        txt_data = data[pos : pos + rdlength]
                         if txt_data.startswith(b"t"):
                             colon_idx = txt_data.find(b":")
                             if colon_idx > 0:
-                                b64_data = txt_data[colon_idx + 1:]
+                                b64_data = txt_data[colon_idx + 1 :]
                                 try:
                                     return base64.b64decode(b64_data)
                                 except Exception:
@@ -330,7 +331,7 @@ class DNSClient:
             print_error("Server tidak siap menerima file.")
             return
         for i in range(0, len(compressed), chunk_size):
-            chunk = compressed[i:i + chunk_size]
+            chunk = compressed[i : i + chunk_size]
             self.send_packet(b"DATA" + struct.pack("!I", i) + chunk)
         print_success("File terkirim.")
 
@@ -378,9 +379,12 @@ def main():
         description="DNS Tunnel - Tunneling data melalui query DNS",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--mode", choices=["server", "client"], required=True,
-                        help="Mode operasi (server/client)")
-    parser.add_argument("--domain", required=True, help="Domain tunnel (contoh: tunnel.example.com)")
+    parser.add_argument(
+        "--mode", choices=["server", "client"], required=True, help="Mode operasi (server/client)"
+    )
+    parser.add_argument(
+        "--domain", required=True, help="Domain tunnel (contoh: tunnel.example.com)"
+    )
     parser.add_argument("--server", help="IP server DNS tunnel (mode client)")
     parser.add_argument("--port", type=int, default=53, help="Port DNS (default: 53)")
     parser.add_argument("--send", help="Kirim file ke server")

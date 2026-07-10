@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ASCII banner untuk OCySec OSINT Framework."""
+
 import random
 import sys
 
@@ -43,6 +44,7 @@ def _supports_color() -> bool:
     if plat == "win32":
         try:
             import ctypes
+
             kernel32 = ctypes.windll.kernel32
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
             return True
@@ -92,4 +94,3 @@ def err(msg: str) -> None:
 def section(title: str) -> None:
     print()
     print(c(f"==[ {title} ]==" + "=" * max(0, 60 - len(title)), "magenta"))
-

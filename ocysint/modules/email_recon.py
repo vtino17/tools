@@ -1,4 +1,5 @@
 """Email reconnaissance: validasi, MX, Gravatar, HIBP, Google Account."""
+
 import asyncio
 from typing import Any, Dict, List
 
@@ -7,12 +8,22 @@ import dns.resolver
 
 from core.utils import gravatar_url, is_valid_email, random_ua
 
-
 DISPOSABLE_DOMAINS = {
-    "mailinator.com", "guerrillamail.com", "10minutemail.com", "tempmail.com",
-    "throwawaymail.com", "yopmail.com", "trashmail.com", "fakeinbox.com",
-    "maildrop.cc", "sharklasers.com", "getnada.com", "dispostable.com",
-    "mintemail.com", "spambox.us", "mohmal.com",
+    "mailinator.com",
+    "guerrillamail.com",
+    "10minutemail.com",
+    "tempmail.com",
+    "throwawaymail.com",
+    "yopmail.com",
+    "trashmail.com",
+    "fakeinbox.com",
+    "maildrop.cc",
+    "sharklasers.com",
+    "getnada.com",
+    "dispostable.com",
+    "mintemail.com",
+    "spambox.us",
+    "mohmal.com",
 }
 
 PROVIDER_MX = {
@@ -74,15 +85,21 @@ async def check_google_account(session: aiohttp.ClientSession, email: str) -> Di
     """Cek apakah akun Google ada (kalau diaktifkan -> tidak ditemukan publik)."""
     # Google's People API doesn't allow direct lookup. Gunakan profil publik.
     # Trik: fetch /+ tanpa error -> ada profil publik.
-    return {"google_profile_public": False, "note": "Google tidak mengizinkan enumerasi email langsung."}
+    return {
+        "google_profile_public": False,
+        "note": "Google tidak mengizinkan enumerasi email langsung.",
+    }
 
 
 async def check_microsoft_account(session: aiohttp.ClientSession, email: str) -> Dict[str, Any]:
     """Cek akun Microsoft via login.live.com (GET ke endpoint authorize)."""
     try:
         url = "https://login.microsoftonline.com/common/oauth2/authorize"
-        params = {"client_id": "00000000-0000-0000-0000-000000000000",
-                  "response_type": "id_token", "login_hint": email}
+        params = {
+            "client_id": "00000000-0000-0000-0000-000000000000",
+            "response_type": "id_token",
+            "login_hint": email,
+        }
         async with session.get(url, params=params, timeout=10) as r:
             body = await r.text()
             return {
@@ -124,4 +141,3 @@ async def full_email_recon(email: str, hibp_api_key: str = "") -> Dict[str, Any]
 
 def run_email_recon(email: str, hibp_api_key: str = "") -> Dict[str, Any]:
     return asyncio.run(full_email_recon(email, hibp_api_key))
-

@@ -62,7 +62,6 @@ DEFAULT_CHECKS = [
         "description": "Deskripsi repo Git",
         "pattern": None,
     },
-
     # SVN exposed
     {
         "path": ".svn/entries",
@@ -78,7 +77,6 @@ DEFAULT_CHECKS = [
         "description": "Database SVN workcopy (SQLite)",
         "pattern": None,
     },
-
     # macOS
     {
         "path": ".DS_Store",
@@ -87,7 +85,6 @@ DEFAULT_CHECKS = [
         "description": "File metadata macOS",
         "pattern": None,
     },
-
     # Environment / Secrets
     {
         "path": ".env",
@@ -131,7 +128,6 @@ DEFAULT_CHECKS = [
         "description": "Development env",
         "pattern": r"[A-Z_]+=.+",
     },
-
     # Apache
     {
         "path": ".htaccess",
@@ -147,7 +143,6 @@ DEFAULT_CHECKS = [
         "description": "File password Apache",
         "pattern": r"(^|:)\$2[aby]\$|^\w+:",
     },
-
     # WordPress
     {
         "path": "wp-config.php.bak",
@@ -170,7 +165,6 @@ DEFAULT_CHECKS = [
         "description": "Versi lama wp-config.php",
         "pattern": r"DB_NAME|DB_USER|DB_PASSWORD|AUTH_KEY",
     },
-
     # Umum
     {
         "path": "config.php.bak",
@@ -200,7 +194,6 @@ DEFAULT_CHECKS = [
         "description": "PHP info page",
         "pattern": r"PHP Version|phpinfo\(\)",
     },
-
     # Server status
     {
         "path": "server-status",
@@ -216,7 +209,6 @@ DEFAULT_CHECKS = [
         "description": "Apache server-info",
         "pattern": r"Server Version|Server Built|Module Name|Server Root",
     },
-
     # Cross-domain policies
     {
         "path": "crossdomain.xml",
@@ -232,7 +224,6 @@ DEFAULT_CHECKS = [
         "description": "Silverlight client access policy",
         "pattern": r"access-policy|cross-domain-access",
     },
-
     # Robots & Sitemap
     {
         "path": "robots.txt",
@@ -255,7 +246,6 @@ DEFAULT_CHECKS = [
         "description": "Sitemap terkompresi",
         "pattern": None,
     },
-
     # IIS / ASP.NET
     {
         "path": "web.config",
@@ -264,7 +254,6 @@ DEFAULT_CHECKS = [
         "description": "Konfigurasi IIS/ASP.NET",
         "pattern": r"<configuration>|<connectionStrings>|<appSettings",
     },
-
     # Package managers
     {
         "path": "package.json",
@@ -336,7 +325,6 @@ DEFAULT_CHECKS = [
         "description": "Yarn lockfile",
         "pattern": None,
     },
-
     # Docker
     {
         "path": "Dockerfile",
@@ -366,7 +354,6 @@ DEFAULT_CHECKS = [
         "description": "Docker ignore file",
         "pattern": None,
     },
-
     # CI/CD
     {
         "path": ".travis.yml",
@@ -403,7 +390,6 @@ DEFAULT_CHECKS = [
         "description": "CircleCI config",
         "pattern": None,
     },
-
     # Git attributes / ignore
     {
         "path": ".gitignore",
@@ -419,7 +405,6 @@ DEFAULT_CHECKS = [
         "description": "Git attributes",
         "pattern": None,
     },
-
     # Mercurial
     {
         "path": ".hg/store",
@@ -428,7 +413,6 @@ DEFAULT_CHECKS = [
         "description": "Repository Mercurial terekspos",
         "pattern": None,
     },
-
     # Bazaar
     {
         "path": ".bzr/README",
@@ -437,7 +421,6 @@ DEFAULT_CHECKS = [
         "description": "Repository Bazaar terekspos",
         "pattern": None,
     },
-
     # IDE / Editor
     {
         "path": ".vscode/settings.json",
@@ -459,6 +442,7 @@ DEFAULT_CHECKS = [
 # ═══════════════════════════════
 # HELPERS
 # ═══════════════════════════════
+
 
 def _get_headers():
     return {
@@ -513,7 +497,11 @@ def _check_path(base_url, check, timeout=10):
             return None
 
     # Pattern None tapi size = 0: skip
-    if pattern is None and clen == 0 and check["path"] not in ("robots.txt", ".gitignore", ".gitattributes"):
+    if (
+        pattern is None
+        and clen == 0
+        and check["path"] not in ("robots.txt", ".gitignore", ".gitattributes")
+    ):
         return None
 
     return {
@@ -531,6 +519,7 @@ def _check_path(base_url, check, timeout=10):
 # MAIN
 # ═══════════════════════════════
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Git/DVCS Exposure Scanner - Deteksi file sensitif terekspos",
@@ -542,11 +531,15 @@ Contoh:
   python git_exposure.py -u https://target.com --threads 5 --timeout 5
         """,
     )
-    parser.add_argument("-u", "--url", required=True, help="URL target (contoh: https://target.com)")
+    parser.add_argument(
+        "-u", "--url", required=True, help="URL target (contoh: https://target.com)"
+    )
     parser.add_argument("-w", "--wordlist", help="File wordlist path tambahan (satu per baris)")
     parser.add_argument("-t", "--threads", type=int, default=5, help="Thread paralel (default: 5)")
     parser.add_argument("--timeout", type=int, default=8, help="Timeout request (default: 8 detik)")
-    parser.add_argument("--include-low", action="store_true", help="Tampilkan temuan severity INFO/LOW")
+    parser.add_argument(
+        "--include-low", action="store_true", help="Tampilkan temuan severity INFO/LOW"
+    )
     args = parser.parse_args()
 
     base_url = args.url.rstrip("/")
@@ -570,13 +563,15 @@ Contoh:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#"):
-                        checks.append({
-                            "path": line,
-                            "category": "Custom",
-                            "severity": "INFO",
-                            "description": f"Custom: {line}",
-                            "pattern": None,
-                        })
+                        checks.append(
+                            {
+                                "path": line,
+                                "category": "Custom",
+                                "severity": "INFO",
+                                "description": f"Custom: {line}",
+                                "pattern": None,
+                            }
+                        )
             print(f"[+] Loaded {sum(1 for c in checks if c['category'] == 'Custom')} custom paths")
         except FileNotFoundError:
             print(f"[!] Wordlist tidak ditemukan: {args.wordlist}")
@@ -597,8 +592,12 @@ Contoh:
             if result:
                 found.append(result)
                 sev = result["severity"]
-                icon = "[!] " if sev in ("CRITICAL", "HIGH") else "[+] " if sev == "MEDIUM" else "[*] "
-                print(f"{icon}{sev:<10} {result['path']:<35} - {result['description']} ({result['size']:,} bytes)")
+                icon = (
+                    "[!] " if sev in ("CRITICAL", "HIGH") else "[+] " if sev == "MEDIUM" else "[*] "
+                )
+                print(
+                    f"{icon}{sev:<10} {result['path']:<35} - {result['description']} ({result['size']:,} bytes)"
+                )
 
     print(f"\n{'=' * 70}")
     print(f"  RINGKASAN TEMUAN")
@@ -620,7 +619,9 @@ Contoh:
 
         total_low = sum(1 for r in found if r["severity"] in ("LOW", "INFO"))
         if total_low > 0 and not args.include_low:
-            print(f"\n[*] {total_low} temuan LOW/INFO disembunyikan (gunakan --include-low untuk menampilkan)")
+            print(
+                f"\n[*] {total_low} temuan LOW/INFO disembunyikan (gunakan --include-low untuk menampilkan)"
+            )
 
         print(f"\n  CRITICAL: {sum(1 for r in found if r['severity'] == 'CRITICAL')}")
         print(f"  HIGH:     {sum(1 for r in found if r['severity'] == 'HIGH')}")

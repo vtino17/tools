@@ -20,110 +20,144 @@ import urllib.parse
 import urllib.request
 from collections import OrderedDict
 
-
-CDN_SIGNATURES = OrderedDict([
-    ("Cloudflare", {
-        "headers": {
-            "cf-ray": "Cloudflare Ray ID (identitas request unik)",
-            "cf-cache-status": "Status cache Cloudflare (HIT/MISS/EXPIRED)",
-            "cf-connecting-ip": "IP asli pengguna di balik Cloudflare",
-        },
-        "cookies": ["__cfduid", "__cf_bm", "cf_clearance"],
-        "server": "cloudflare",
-        "description": "Cloudflare CDN/WAF - melindungi dari DDoS dan menyediakan caching global",
-    }),
-    ("AWS CloudFront", {
-        "headers": {
-            "x-amz-cf-id": "CloudFront request ID",
-            "x-amz-cf-pop": "CloudFront Point of Presence (edge location)",
-        },
-        "cookies": [],
-        "server": "cloudfront",
-        "description": "Amazon CloudFront CDN - edge caching dari AWS global network",
-    }),
-    ("Akamai", {
-        "headers": {
-            "x-akamai-transformed": "Akamai content transformation status",
-            "x-akamai-request-id": "Akamai request identifier",
-            "x-akamai-staging": "Akamai staging environment flag",
-            "x-true-client-ip": "Client IP behind Akamai (umum)",
-        },
-        "cookies": ["akaalb_"],
-        "server": "akamai",
-        "description": "Akamai CDN - salah satu CDN tertua dan terbesar di dunia",
-    }),
-    ("Fastly", {
-        "headers": {
-            "x-served-by": "Fastly edge server yang melayani request",
-            "x-cache": "Fastly cache status (HIT/MISS)",
-            "x-cache-hits": "Jumlah cache hits Fastly",
-            "x-timer": "Fastly timing header",
-        },
-        "cookies": [],
-        "server": None,
-        "description": "Fastly CDN - edge cloud platform dengan VCL configuration",
-    }),
-    ("Varnish", {
-        "headers": {
-            "x-varnish": "Varnish cache ID / status",
-        },
-        "cookies": [],
-        "server": None,
-        "via_pattern": r"varnish",
-        "description": "Varnish Cache - HTTP accelerator/reverse proxy open source",
-    }),
-    ("Nginx", {
-        "headers": {
-            "x-proxy-cache": "Nginx proxy cache status (umum)",
-            "x-accel-expires": "Nginx X-Accel internal header",
-        },
-        "cookies": [],
-        "server": "nginx",
-        "description": "Nginx - web server sekaligus reverse proxy populer",
-    }),
-    ("HAProxy", {
-        "headers": {},
-        "cookies": [],
-        "server": "haproxy",
-        "description": "HAProxy - load balancer dan reverse proxy TCP/HTTP",
-    }),
-    ("Imperva / Incapsula", {
-        "headers": {
-            "x-iinfo": "Imperva/Incapsula request info",
-            "x-cdn": "Imperva CDN identifier",
-            "x-request-info": "Imperva request metadata",
-        },
-        "cookies": ["incap_ses_", "visid_incap_", "nlbi_"],
-        "server": None,
-        "description": "Imperva/Incapsula - WAF dan CDN enterprise security",
-    }),
-    ("Sucuri", {
-        "headers": {
-            "x-sucuri-id": "Sucuri firewall request ID",
-            "x-sucuri-cache": "Sucuri cache status",
-            "x-sucuri-block": "Sucuri block reason (jika diblok)",
-        },
-        "cookies": ["sucuri_cloudproxy"],
-        "server": "sucuri",
-        "description": "Sucuri - Website firewall dan CDN security",
-    }),
-    ("Google Cloud CDN", {
-        "headers": {},
-        "cookies": [],
-        "server": "google frontend",
-        "description": "Google Cloud CDN - edge caching via Google infrastructure",
-    }),
-    ("Azure CDN / Front Door", {
-        "headers": {
-            "x-azure-ref": "Azure CDN/Front Door reference ID",
-            "x-azure-requestchain": "Azure Front Door request chain",
-            "x-azure-fdid": "Azure Front Door instance ID",
-        },
-        "cookies": ["x-ms-edge-ref"],
-        "server": None,
-        "description": "Microsoft Azure CDN & Front Door - edge delivery + WAF",
-    }),
-])
+CDN_SIGNATURES = OrderedDict(
+    [
+        (
+            "Cloudflare",
+            {
+                "headers": {
+                    "cf-ray": "Cloudflare Ray ID (identitas request unik)",
+                    "cf-cache-status": "Status cache Cloudflare (HIT/MISS/EXPIRED)",
+                    "cf-connecting-ip": "IP asli pengguna di balik Cloudflare",
+                },
+                "cookies": ["__cfduid", "__cf_bm", "cf_clearance"],
+                "server": "cloudflare",
+                "description": "Cloudflare CDN/WAF - melindungi dari DDoS dan menyediakan caching global",
+            },
+        ),
+        (
+            "AWS CloudFront",
+            {
+                "headers": {
+                    "x-amz-cf-id": "CloudFront request ID",
+                    "x-amz-cf-pop": "CloudFront Point of Presence (edge location)",
+                },
+                "cookies": [],
+                "server": "cloudfront",
+                "description": "Amazon CloudFront CDN - edge caching dari AWS global network",
+            },
+        ),
+        (
+            "Akamai",
+            {
+                "headers": {
+                    "x-akamai-transformed": "Akamai content transformation status",
+                    "x-akamai-request-id": "Akamai request identifier",
+                    "x-akamai-staging": "Akamai staging environment flag",
+                    "x-true-client-ip": "Client IP behind Akamai (umum)",
+                },
+                "cookies": ["akaalb_"],
+                "server": "akamai",
+                "description": "Akamai CDN - salah satu CDN tertua dan terbesar di dunia",
+            },
+        ),
+        (
+            "Fastly",
+            {
+                "headers": {
+                    "x-served-by": "Fastly edge server yang melayani request",
+                    "x-cache": "Fastly cache status (HIT/MISS)",
+                    "x-cache-hits": "Jumlah cache hits Fastly",
+                    "x-timer": "Fastly timing header",
+                },
+                "cookies": [],
+                "server": None,
+                "description": "Fastly CDN - edge cloud platform dengan VCL configuration",
+            },
+        ),
+        (
+            "Varnish",
+            {
+                "headers": {
+                    "x-varnish": "Varnish cache ID / status",
+                },
+                "cookies": [],
+                "server": None,
+                "via_pattern": r"varnish",
+                "description": "Varnish Cache - HTTP accelerator/reverse proxy open source",
+            },
+        ),
+        (
+            "Nginx",
+            {
+                "headers": {
+                    "x-proxy-cache": "Nginx proxy cache status (umum)",
+                    "x-accel-expires": "Nginx X-Accel internal header",
+                },
+                "cookies": [],
+                "server": "nginx",
+                "description": "Nginx - web server sekaligus reverse proxy populer",
+            },
+        ),
+        (
+            "HAProxy",
+            {
+                "headers": {},
+                "cookies": [],
+                "server": "haproxy",
+                "description": "HAProxy - load balancer dan reverse proxy TCP/HTTP",
+            },
+        ),
+        (
+            "Imperva / Incapsula",
+            {
+                "headers": {
+                    "x-iinfo": "Imperva/Incapsula request info",
+                    "x-cdn": "Imperva CDN identifier",
+                    "x-request-info": "Imperva request metadata",
+                },
+                "cookies": ["incap_ses_", "visid_incap_", "nlbi_"],
+                "server": None,
+                "description": "Imperva/Incapsula - WAF dan CDN enterprise security",
+            },
+        ),
+        (
+            "Sucuri",
+            {
+                "headers": {
+                    "x-sucuri-id": "Sucuri firewall request ID",
+                    "x-sucuri-cache": "Sucuri cache status",
+                    "x-sucuri-block": "Sucuri block reason (jika diblok)",
+                },
+                "cookies": ["sucuri_cloudproxy"],
+                "server": "sucuri",
+                "description": "Sucuri - Website firewall dan CDN security",
+            },
+        ),
+        (
+            "Google Cloud CDN",
+            {
+                "headers": {},
+                "cookies": [],
+                "server": "google frontend",
+                "description": "Google Cloud CDN - edge caching via Google infrastructure",
+            },
+        ),
+        (
+            "Azure CDN / Front Door",
+            {
+                "headers": {
+                    "x-azure-ref": "Azure CDN/Front Door reference ID",
+                    "x-azure-requestchain": "Azure Front Door request chain",
+                    "x-azure-fdid": "Azure Front Door instance ID",
+                },
+                "cookies": ["x-ms-edge-ref"],
+                "server": None,
+                "description": "Microsoft Azure CDN & Front Door - edge delivery + WAF",
+            },
+        ),
+    ]
+)
 
 WAF_OVERLAP_CHECKS = {
     "mod_security": {
@@ -170,7 +204,7 @@ def make_request(url: str, timeout: int = 10) -> dict:
             method="GET",
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                              "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
             },
@@ -238,8 +272,11 @@ def detect_cdn(response: dict) -> list[dict]:
                 confidence = "certain"
 
         for cookie_name in sig["cookies"]:
-            matching = [c for c in cookies if c.startswith(cookie_name.lower().replace("_", ""))
-                        or cookie_name.lower() in c]
+            matching = [
+                c
+                for c in cookies
+                if c.startswith(cookie_name.lower().replace("_", "")) or cookie_name.lower() in c
+            ]
             if matching:
                 evidence.append(f"Cookie: {matching[0]} (signature {cookie_name})")
                 if confidence != "certain":
@@ -252,31 +289,35 @@ def detect_cdn(response: dict) -> list[dict]:
 
         if "via_pattern" in sig:
             import re
+
             if re.search(sig["via_pattern"], via_lower):
                 evidence.append(f"Via header: {response['via_header']}")
                 if confidence == "possible":
                     confidence = "likely"
 
         if evidence:
-            findings.append({
-                "name": name,
-                "confidence": confidence,
-                "description": sig["description"],
-                "evidence": evidence,
-            })
+            findings.append(
+                {
+                    "name": name,
+                    "confidence": confidence,
+                    "description": sig["description"],
+                    "evidence": evidence,
+                }
+            )
 
     if response["x_forwarded_for"]:
         has_reverse_proxy = any(
-            f["name"] in ["Nginx", "HAProxy", "Varnish", "Cloudflare", "Fastly"]
-            for f in findings
+            f["name"] in ["Nginx", "HAProxy", "Varnish", "Cloudflare", "Fastly"] for f in findings
         )
         if not has_reverse_proxy:
-            findings.append({
-                "name": "Reverse Proxy (Generik)",
-                "confidence": "likely",
-                "description": "Reverse proxy tidak dikenal - terdeteksi dari X-Forwarded-For header",
-                "evidence": [f"X-Forwarded-For: {response['x_forwarded_for']}"],
-            })
+            findings.append(
+                {
+                    "name": "Reverse Proxy (Generik)",
+                    "confidence": "likely",
+                    "description": "Reverse proxy tidak dikenal - terdeteksi dari X-Forwarded-For header",
+                    "evidence": [f"X-Forwarded-For: {response['x_forwarded_for']}"],
+                }
+            )
 
     return findings
 
@@ -296,6 +337,7 @@ def detect_waf_overlap(response: dict, cdn_findings: list[dict]) -> list[dict]:
 
         if "server_pattern" in sig:
             import re
+
             if re.search(sig["server_pattern"], server_lower):
                 evidence.append(f"Server header: {response['server_header']}")
 
@@ -307,11 +349,13 @@ def detect_waf_overlap(response: dict, cdn_findings: list[dict]) -> list[dict]:
             if "Cloudflare" in cdn_names and name == "Wordfence":
                 overlap_info = " (Wordfence + Cloudflare integration terdeteksi)"
 
-            waf_findings.append({
-                "name": name + overlap_info,
-                "confidence": "certain" if len(evidence) >= 2 else "likely",
-                "evidence": evidence,
-            })
+            waf_findings.append(
+                {
+                    "name": name + overlap_info,
+                    "confidence": "certain" if len(evidence) >= 2 else "likely",
+                    "evidence": evidence,
+                }
+            )
 
     return waf_findings
 
@@ -395,7 +439,8 @@ Contoh:
     )
 
     parser.add_argument(
-        "--target", "-t",
+        "--target",
+        "-t",
         type=str,
         required=True,
         help="URL target (contoh: https://example.com)",

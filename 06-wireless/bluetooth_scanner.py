@@ -79,7 +79,9 @@ def scan_linux(args):
     if args.include_ble:
         print(f"\n[*] Memindai perangkat BLE...")
         ble_scan = ["hcitool", "lescan", "--duplicates"]
-        ble_proc = subprocess.Popen(ble_scan, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        ble_proc = subprocess.Popen(
+            ble_scan, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
+        )
         ble_start = time.time()
         ble_devices = set()
 
@@ -109,8 +111,7 @@ def scan_services_linux(target: str):
     print(f"[*] Menghubungkan ke {target} untuk query SDP...")
     try:
         result = subprocess.run(
-            ["sdptool", "browse", target],
-            capture_output=True, text=True, timeout=15
+            ["sdptool", "browse", target], capture_output=True, text=True, timeout=15
         )
         if result.returncode != 0:
             print(f"[!] Gagal query SDP: {result.stderr.strip()}")
@@ -153,8 +154,7 @@ def scan_gatt_linux(target: str):
     print(f"[*] Menghubungkan ke {target} untuk enumerasi GATT...")
     try:
         result = subprocess.run(
-            ["gatttool", "-b", target, "--primary"],
-            capture_output=True, text=True, timeout=10
+            ["gatttool", "-b", target, "--primary"], capture_output=True, text=True, timeout=10
         )
         print(f"[*] Daftar service GATT:")
         services = []
@@ -197,14 +197,18 @@ Function Await($WinRtTask, $ResultType) {
 }
 """
     try:
-        result = subprocess.run(["powershell", "-NoProfile", "-Command", script],
-                                capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", script],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
         devices = {}
         for line in result.stdout.strip().splitlines():
             parts = line.strip().split("|", 2)
             if len(parts) >= 2:
                 mac_raw = parts[0]
-                mac = ":".join(mac_raw[i:i+2] for i in range(0, 12, 2)).upper()
+                mac = ":".join(mac_raw[i : i + 2] for i in range(0, 12, 2)).upper()
                 name = parts[1] if parts[1] else "(Unknown)"
                 dev_type = parts[2] if len(parts) > 2 else "Unknown"
                 devices[mac] = {"name": name, "mac": mac, "type": dev_type}
@@ -224,7 +228,9 @@ def export_json(devices: dict, services: list | None, output_path: str, target: 
         "services": services or [],
     }
     for mac, info in devices.items():
-        data["devices"].append({"mac": mac, "name": info.get("name", ""), "type": info.get("type", "")})
+        data["devices"].append(
+            {"mac": mac, "name": info.get("name", ""), "type": info.get("type", "")}
+        )
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
     print(f"[+] Hasil diekspor ke: {output_path}")
@@ -241,10 +247,16 @@ Contoh:
   python bluetooth_scanner.py --mode gatt --target AA:BB:CC:DD:EE:FF --output hasil.json
         """,
     )
-    parser.add_argument("--mode", default="scan", choices=["scan", "services", "gatt"],
-                        help="Mode operasi: scan, services, atau gatt (default: scan)")
+    parser.add_argument(
+        "--mode",
+        default="scan",
+        choices=["scan", "services", "gatt"],
+        help="Mode operasi: scan, services, atau gatt (default: scan)",
+    )
     parser.add_argument("--target", help="MAC address target untuk mode services/gatt")
-    parser.add_argument("--timeout", type=int, default=10, help="Durasi scan dalam detik (default: 10)")
+    parser.add_argument(
+        "--timeout", type=int, default=10, help="Durasi scan dalam detik (default: 10)"
+    )
     parser.add_argument("--output", help="File output JSON")
     parser.add_argument("--include-ble", action="store_true", help="Sertakan scan BLE (Linux)")
     args = parser.parse_args()

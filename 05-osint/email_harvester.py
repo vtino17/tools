@@ -4,6 +4,7 @@ Email Harvester - Extract email addresses from web pages
 Mengumpulkan alamat email dari halaman web, search engines.
 Usage: python email_harvester.py -d example.com -l 100
 """
+
 import requests
 import argparse
 import sys
@@ -11,8 +12,7 @@ import re
 import time
 from urllib.parse import urljoin, urlparse, quote_plus
 
-
-EMAIL_REGEX = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+EMAIL_REGEX = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
 
 
 def extract_emails_from_text(text):
@@ -46,7 +46,11 @@ def google_search(session, query, pages=1):
     for page in range(pages):
         try:
             url = f"https://www.google.com/search?q={quote_plus(query)}&start={page*10}"
-            r = session.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"})
+            r = session.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+            )
             emails.extend(extract_emails_from_text(r.text))
             time.sleep(2)
         except:
@@ -60,7 +64,11 @@ def bing_search(session, query, pages=1):
     for page in range(pages):
         try:
             url = f"https://www.bing.com/search?q={quote_plus(query)}&first={page*10+1}"
-            r = session.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"})
+            r = session.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+            )
             emails.extend(extract_emails_from_text(r.text))
             time.sleep(2)
         except:
@@ -75,7 +83,9 @@ def main():
     parser.add_argument("-l", "--limit", type=int, default=100, help="Max emails to find")
     parser.add_argument("--depth", type=int, default=1, help="Crawl depth")
     parser.add_argument("--search", help="Search query (e.g. '@example.com')")
-    parser.add_argument("--engine", choices=["google", "bing"], default="bing", help="Search engine")
+    parser.add_argument(
+        "--engine", choices=["google", "bing"], default="bing", help="Search engine"
+    )
     args = parser.parse_args()
 
     session = requests.Session()
@@ -119,11 +129,10 @@ def main():
     print("\n" + "=" * 70)
     print(f"[+] Found {len(all_emails)} unique email(s):")
     print("=" * 70)
-    for email in sorted(all_emails)[:args.limit]:
+    for email in sorted(all_emails)[: args.limit]:
         print(f"  {email}")
     print("=" * 70)
 
 
 if __name__ == "__main__":
     main()
-

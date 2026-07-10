@@ -33,24 +33,65 @@ except Exception:
 # ═══════════════════════════════
 
 COMMON_PLUGINS = [
-    "akismet", "contact-form-7", "woocommerce", "wordpress-seo", "jetpack",
-    "wordfence", "wp-super-cache", "w3-total-cache", "elementor", "updraftplus",
-    "all-in-one-seo-pack", "google-analytics-for-wordpress", "really-simple-ssl",
-    "duplicate-post", "redirection", "wp-rocket", "imagify", "wp-smushit",
-    "litespeed-cache", "wp-optimize", "broken-link-checker", "wordfence-security",
-    "limit-login-attempts-reloaded", "wp-mail-smtp", "bbpress", "buddypress",
-    "advanced-custom-fields", "revslider", "wp-file-manager", "duplicator",
-    "all-in-one-wp-migration", "mailchimp-for-wp", "ninja-forms", "gravityforms",
-    "wpforms-lite", "classic-editor", "disable-comments", "duplicate-page",
-    "gdpr-cookie-compliance", "cookie-law-info", "popup-maker", "the-events-calendar",
-    "regenerate-thumbnails", "easy-digital-downloads", "give", "members",
-    "wp-migrate-db", "query-monitor", "user-role-editor", "wps-hide-login",
-    "better-search-replace", "loginizer", "simple-history",
+    "akismet",
+    "contact-form-7",
+    "woocommerce",
+    "wordpress-seo",
+    "jetpack",
+    "wordfence",
+    "wp-super-cache",
+    "w3-total-cache",
+    "elementor",
+    "updraftplus",
+    "all-in-one-seo-pack",
+    "google-analytics-for-wordpress",
+    "really-simple-ssl",
+    "duplicate-post",
+    "redirection",
+    "wp-rocket",
+    "imagify",
+    "wp-smushit",
+    "litespeed-cache",
+    "wp-optimize",
+    "broken-link-checker",
+    "wordfence-security",
+    "limit-login-attempts-reloaded",
+    "wp-mail-smtp",
+    "bbpress",
+    "buddypress",
+    "advanced-custom-fields",
+    "revslider",
+    "wp-file-manager",
+    "duplicator",
+    "all-in-one-wp-migration",
+    "mailchimp-for-wp",
+    "ninja-forms",
+    "gravityforms",
+    "wpforms-lite",
+    "classic-editor",
+    "disable-comments",
+    "duplicate-page",
+    "gdpr-cookie-compliance",
+    "cookie-law-info",
+    "popup-maker",
+    "the-events-calendar",
+    "regenerate-thumbnails",
+    "easy-digital-downloads",
+    "give",
+    "members",
+    "wp-migrate-db",
+    "query-monitor",
+    "user-role-editor",
+    "wps-hide-login",
+    "better-search-replace",
+    "loginizer",
+    "simple-history",
 ]
 
 # ═══════════════════════════════
 # HEADERS
 # ═══════════════════════════════
+
 
 def _get_headers():
     return {
@@ -70,6 +111,7 @@ def _get_json_headers():
 # DETECT WORDPRESS
 # ═══════════════════════════════
 
+
 def detect_wordpress(url, timeout=10):
     """Deteksi apakah target adalah WordPress dan dapatkan versinya."""
     base = url.rstrip("/")
@@ -85,9 +127,13 @@ def detect_wordpress(url, timeout=10):
 
     # Cek indikator WordPress
     wp_signs = [
-        "wp-content", "wp-includes", "wp-json", "wordpress",
-        "<meta name=\"generator\" content=\"wordpress",
-        "/wp-admin/", "/wp-login.php",
+        "wp-content",
+        "wp-includes",
+        "wp-json",
+        "wordpress",
+        '<meta name="generator" content="wordpress',
+        "/wp-admin/",
+        "/wp-login.php",
     ]
     wp_score = sum(1 for s in wp_signs if s in text)
 
@@ -97,7 +143,9 @@ def detect_wordpress(url, timeout=10):
         return info
 
     # Versi dari meta generator
-    m = re.search(r'<meta\s+name="generator"\s+content="WordPress\s+([0-9.]+)"', resp.text, re.IGNORECASE)
+    m = re.search(
+        r'<meta\s+name="generator"\s+content="WordPress\s+([0-9.]+)"', resp.text, re.IGNORECASE
+    )
     if m:
         info["version"] = m.group(1)
         info["sources"].append("meta-generator")
@@ -105,7 +153,9 @@ def detect_wordpress(url, timeout=10):
     # Versi dari readme.html
     if not info["version"]:
         try:
-            r = requests.get(f"{base}/readme.html", headers=_get_headers(), timeout=timeout, verify=False)
+            r = requests.get(
+                f"{base}/readme.html", headers=_get_headers(), timeout=timeout, verify=False
+            )
             if r.status_code == 200:
                 m = re.search(r"WordPress\s+Version\s+([0-9.]+)", r.text, re.IGNORECASE)
                 m2 = re.search(r"Stable tag:\s*([0-9.]+)", r.text, re.IGNORECASE)
@@ -123,7 +173,11 @@ def detect_wordpress(url, timeout=10):
         try:
             r = requests.get(f"{base}/feed/", headers=_get_headers(), timeout=timeout, verify=False)
             if r.status_code == 200:
-                m = re.search(r"<generator>https?://wordpress\.org/\?v=([0-9.]+)</generator>", r.text, re.IGNORECASE)
+                m = re.search(
+                    r"<generator>https?://wordpress\.org/\?v=([0-9.]+)</generator>",
+                    r.text,
+                    re.IGNORECASE,
+                )
                 if m:
                     info["version"] = m.group(1)
                     info["sources"].append("rss-feed")
@@ -133,7 +187,9 @@ def detect_wordpress(url, timeout=10):
     # Versi dari wp-json
     if not info["version"]:
         try:
-            r = requests.get(f"{base}/wp-json/", headers=_get_headers(), timeout=timeout, verify=False)
+            r = requests.get(
+                f"{base}/wp-json/", headers=_get_headers(), timeout=timeout, verify=False
+            )
             if r.status_code == 200:
                 # Namespace 'wp/v2' indicates WP
                 info["sources"].append("wp-json")
@@ -146,6 +202,7 @@ def detect_wordpress(url, timeout=10):
 # ═══════════════════════════════
 # ENUMERATION
 # ═══════════════════════════════
+
 
 def enumerate_users_via_rest(base_url, timeout=10):
     """Enumerasi user via WordPress REST API."""
@@ -161,12 +218,14 @@ def enumerate_users_via_rest(base_url, timeout=10):
             if not data:
                 break
             for u in data:
-                users.append({
-                    "id": u.get("id"),
-                    "name": u.get("name", "N/A"),
-                    "slug": u.get("slug", "N/A"),
-                    "link": u.get("link", ""),
-                })
+                users.append(
+                    {
+                        "id": u.get("id"),
+                        "name": u.get("name", "N/A"),
+                        "slug": u.get("slug", "N/A"),
+                        "link": u.get("link", ""),
+                    }
+                )
             page += 1
             if page > 10:  # safety limit
                 break
@@ -183,7 +242,9 @@ def enumerate_users_via_author(base_url, timeout=10):
     for author_id in range(1, 21):
         url = f"{base_url}/?author={author_id}"
         try:
-            resp = requests.get(url, headers=_get_headers(), timeout=timeout, verify=False, allow_redirects=False)
+            resp = requests.get(
+                url, headers=_get_headers(), timeout=timeout, verify=False, allow_redirects=False
+            )
             if resp.status_code in (301, 302):
                 loc = resp.headers.get("Location", "")
                 m = re.search(r"/author/([^/]+)/?", loc)
@@ -193,7 +254,9 @@ def enumerate_users_via_author(base_url, timeout=10):
             if resp.status_code == 200 and "/author/" in resp.url:
                 m = re.search(r"/author/([^/]+)/?", resp.url)
                 if m:
-                    users.append({"id": author_id, "slug": m.group(1), "name": "N/A", "link": resp.url})
+                    users.append(
+                        {"id": author_id, "slug": m.group(1), "name": "N/A", "link": resp.url}
+                    )
         except RequestException:
             continue
     return users
@@ -207,8 +270,12 @@ def enumerate_plugins(base_url, threads=10, timeout=10):
     def _check(plugin):
         try:
             # Cek readme.txt plugin
-            r = session.get(f"{base_url}/wp-content/plugins/{plugin}/readme.txt",
-                            headers=_get_headers(), timeout=timeout, verify=False)
+            r = session.get(
+                f"{base_url}/wp-content/plugins/{plugin}/readme.txt",
+                headers=_get_headers(),
+                timeout=timeout,
+                verify=False,
+            )
             if r.status_code == 200 and ("===" in r.text[:200] or "Plugin Name" in r.text[:500]):
                 version = "unknown"
                 m = re.search(r"Stable tag:\s*([0-9.]+)", r.text)
@@ -219,16 +286,24 @@ def enumerate_plugins(base_url, threads=10, timeout=10):
             pass
         try:
             # Cek style.css (theme atau plugin dengan CSS)
-            r = session.get(f"{base_url}/wp-content/plugins/{plugin}/",
-                            headers=_get_headers(), timeout=timeout, verify=False)
+            r = session.get(
+                f"{base_url}/wp-content/plugins/{plugin}/",
+                headers=_get_headers(),
+                timeout=timeout,
+                verify=False,
+            )
             if r.status_code == 200:
                 return {"name": plugin, "version": "unknown", "source": "directory"}
         except Exception:
             pass
         try:
             # Index listing
-            r = session.get(f"{base_url}/wp-content/plugins/{plugin}/index.php",
-                            headers=_get_headers(), timeout=timeout, verify=False)
+            r = session.get(
+                f"{base_url}/wp-content/plugins/{plugin}/index.php",
+                headers=_get_headers(),
+                timeout=timeout,
+                verify=False,
+            )
             if r.status_code == 200:
                 return {"name": plugin, "version": "unknown", "source": "index"}
         except Exception:
@@ -263,8 +338,12 @@ def enumerate_themes(base_url, timeout=10):
             # Coba dapatkan versi dari style.css
             version = "unknown"
             try:
-                r = requests.get(f"{base_url}/wp-content/themes/{theme_name}/style.css",
-                                 headers=_get_headers(), timeout=timeout, verify=False)
+                r = requests.get(
+                    f"{base_url}/wp-content/themes/{theme_name}/style.css",
+                    headers=_get_headers(),
+                    timeout=timeout,
+                    verify=False,
+                )
                 if r.status_code == 200:
                     m = re.search(r"Version:\s*([0-9.]+)", r.text)
                     if m:
@@ -280,6 +359,7 @@ def enumerate_themes(base_url, timeout=10):
 # MISCONFIGURATION CHECKS
 # ═══════════════════════════════
 
+
 def check_misconfigs(base_url, timeout=10):
     """Cek berbagai misconfigurasi WordPress."""
     findings = []
@@ -287,63 +367,84 @@ def check_misconfigs(base_url, timeout=10):
 
     # XML-RPC
     try:
-        r = session.get(f"{base_url}/xmlrpc.php", headers=_get_headers(), timeout=timeout, verify=False)
+        r = session.get(
+            f"{base_url}/xmlrpc.php", headers=_get_headers(), timeout=timeout, verify=False
+        )
         if r.status_code in (200, 405):
-            findings.append({
-                "type": "xmlrpc",
-                "severity": "MEDIUM",
-                "description": "XML-RPC endpoint aktif - memungkinkan brute force dan pingback",
-                "url": f"{base_url}/xmlrpc.php",
-                "evidence": f"Status {r.status_code}",
-            })
+            findings.append(
+                {
+                    "type": "xmlrpc",
+                    "severity": "MEDIUM",
+                    "description": "XML-RPC endpoint aktif - memungkinkan brute force dan pingback",
+                    "url": f"{base_url}/xmlrpc.php",
+                    "evidence": f"Status {r.status_code}",
+                }
+            )
     except RequestException:
         pass
 
     # Test XML-RPC system.listMethods
     try:
         xml_body = '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName><params></params></methodCall>'
-        r = session.post(f"{base_url}/xmlrpc.php", data=xml_body, headers={"Content-Type": "text/xml"},
-                         timeout=timeout, verify=False)
+        r = session.post(
+            f"{base_url}/xmlrpc.php",
+            data=xml_body,
+            headers={"Content-Type": "text/xml"},
+            timeout=timeout,
+            verify=False,
+        )
         if "system.listMethods" in r.text or "wp.getUsers" in r.text:
-            findings.append({
-                "type": "xmlrpc_methods",
-                "severity": "HIGH",
-                "description": "XML-RPC memungkinkan enumerasi method (potensial brute force)",
-                "url": f"{base_url}/xmlrpc.php",
-                "evidence": "system.listMethods terpapar",
-            })
+            findings.append(
+                {
+                    "type": "xmlrpc_methods",
+                    "severity": "HIGH",
+                    "description": "XML-RPC memungkinkan enumerasi method (potensial brute force)",
+                    "url": f"{base_url}/xmlrpc.php",
+                    "evidence": "system.listMethods terpapar",
+                }
+            )
     except RequestException:
         pass
 
     # wp-json exposed
     try:
-        r = session.get(f"{base_url}/wp-json/", headers=_get_headers(), timeout=timeout, verify=False)
+        r = session.get(
+            f"{base_url}/wp-json/", headers=_get_headers(), timeout=timeout, verify=False
+        )
         if r.status_code == 200 and "namespaces" in r.text:
-            findings.append({
-                "type": "rest_api",
-                "severity": "INFO",
-                "description": "WP REST API terekspos (wp-json root)",
-                "url": f"{base_url}/wp-json/",
-                "evidence": "Root API dengan namespaces",
-            })
+            findings.append(
+                {
+                    "type": "rest_api",
+                    "severity": "INFO",
+                    "description": "WP REST API terekspos (wp-json root)",
+                    "url": f"{base_url}/wp-json/",
+                    "evidence": "Root API dengan namespaces",
+                }
+            )
     except RequestException:
         pass
 
     # wp-json wp/v2/users
     try:
-        r = session.get(f"{base_url}/wp-json/wp/v2/users", headers=_get_json_headers(),
-                        timeout=timeout, verify=False)
+        r = session.get(
+            f"{base_url}/wp-json/wp/v2/users",
+            headers=_get_json_headers(),
+            timeout=timeout,
+            verify=False,
+        )
         if r.status_code == 200:
             try:
                 data = r.json()
                 if isinstance(data, list) and len(data) > 0:
-                    findings.append({
-                        "type": "user_enum",
-                        "severity": "MEDIUM",
-                        "description": f"REST API user enumeration aktif ({len(data)} user)",
-                        "url": f"{base_url}/wp-json/wp/v2/users",
-                        "evidence": f"{len(data)} user terekspos",
-                    })
+                    findings.append(
+                        {
+                            "type": "user_enum",
+                            "severity": "MEDIUM",
+                            "description": f"REST API user enumeration aktif ({len(data)} user)",
+                            "url": f"{base_url}/wp-json/wp/v2/users",
+                            "evidence": f"{len(data)} user terekspos",
+                        }
+                    )
             except ValueError:
                 pass
     except RequestException:
@@ -351,15 +452,19 @@ def check_misconfigs(base_url, timeout=10):
 
     # Uploads directory listing
     try:
-        r = session.get(f"{base_url}/wp-content/uploads/", headers=_get_headers(), timeout=timeout, verify=False)
+        r = session.get(
+            f"{base_url}/wp-content/uploads/", headers=_get_headers(), timeout=timeout, verify=False
+        )
         if r.status_code == 200 and ("Index of" in r.text or "Parent Directory" in r.text):
-            findings.append({
-                "type": "directory_listing",
-                "severity": "HIGH",
-                "description": "Directory listing AKTIF pada wp-content/uploads/",
-                "url": f"{base_url}/wp-content/uploads/",
-                "evidence": "Directory index terlihat",
-            })
+            findings.append(
+                {
+                    "type": "directory_listing",
+                    "severity": "HIGH",
+                    "description": "Directory listing AKTIF pada wp-content/uploads/",
+                    "url": f"{base_url}/wp-content/uploads/",
+                    "evidence": "Directory index terlihat",
+                }
+            )
     except RequestException:
         pass
 
@@ -367,37 +472,45 @@ def check_misconfigs(base_url, timeout=10):
     wp_config_checks = [
         "wp-config.php.bak",
         "wp-config.php~",
-        "wp-config.php.old", 
+        "wp-config.php.old",
         "wp-config.php.backup",
         "wp-config.php.save",
         "wp-config.txt",
     ]
     for path in wp_config_checks:
         try:
-            r = session.get(f"{base_url}/{path}", headers=_get_headers(), timeout=timeout, verify=False)
+            r = session.get(
+                f"{base_url}/{path}", headers=_get_headers(), timeout=timeout, verify=False
+            )
             if r.status_code == 200 and ("DB_NAME" in r.text or "DB_PASSWORD" in r.text):
-                findings.append({
-                    "type": "wpconfig",
-                    "severity": "CRITICAL",
-                    "description": f"Backup wp-config.php terekspos: {path}",
-                    "url": f"{base_url}/{path}",
-                    "evidence": "Database credentials terlihat",
-                })
+                findings.append(
+                    {
+                        "type": "wpconfig",
+                        "severity": "CRITICAL",
+                        "description": f"Backup wp-config.php terekspos: {path}",
+                        "url": f"{base_url}/{path}",
+                        "evidence": "Database credentials terlihat",
+                    }
+                )
                 break
         except RequestException:
             pass
 
     # wp-content directory listing
     try:
-        r = session.get(f"{base_url}/wp-content/", headers=_get_headers(), timeout=timeout, verify=False)
+        r = session.get(
+            f"{base_url}/wp-content/", headers=_get_headers(), timeout=timeout, verify=False
+        )
         if r.status_code == 200 and ("Index of" in r.text or "Parent Directory" in r.text):
-            findings.append({
-                "type": "directory_listing",
-                "severity": "MEDIUM",
-                "description": "Directory listing AKTIF pada wp-content/",
-                "url": f"{base_url}/wp-content/",
-                "evidence": "Directory index terlihat",
-            })
+            findings.append(
+                {
+                    "type": "directory_listing",
+                    "severity": "MEDIUM",
+                    "description": "Directory listing AKTIF pada wp-content/",
+                    "url": f"{base_url}/wp-content/",
+                    "evidence": "Directory index terlihat",
+                }
+            )
     except RequestException:
         pass
 
@@ -407,6 +520,7 @@ def check_misconfigs(base_url, timeout=10):
 # ═══════════════════════════════
 # MAIN
 # ═══════════════════════════════
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -420,10 +534,18 @@ Contoh:
   python wordpress_scanner.py -u https://target.com/subdir/
         """,
     )
-    parser.add_argument("-u", "--url", required=True, help="URL target WordPress (contoh: https://target.com)")
-    parser.add_argument("-e", "--enumerate", default="u,p,t",
-                        help="Jenis enumerasi: u=users, p=plugins, t=themes (default: u,p,t)")
-    parser.add_argument("-t", "--threads", type=int, default=10, help="Thread paralel (default: 10)")
+    parser.add_argument(
+        "-u", "--url", required=True, help="URL target WordPress (contoh: https://target.com)"
+    )
+    parser.add_argument(
+        "-e",
+        "--enumerate",
+        default="u,p,t",
+        help="Jenis enumerasi: u=users, p=plugins, t=themes (default: u,p,t)",
+    )
+    parser.add_argument(
+        "-t", "--threads", type=int, default=10, help="Thread paralel (default: 10)"
+    )
     parser.add_argument("--timeout", type=int, default=10, help="Timeout request (default: 10)")
     args = parser.parse_args()
 

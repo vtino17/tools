@@ -1,4 +1,5 @@
 """Fungsi utilitas bersama (HTTP, async, regex, validasi)."""
+
 import asyncio
 import hashlib
 import random
@@ -103,7 +104,7 @@ async def bounded_gather(
 
 def chunked(seq: List[T], size: int) -> Iterable[List[T]]:
     for i in range(0, len(seq), size):
-        yield seq[i:i + size]
+        yield seq[i : i + size]
 
 
 def rate_limited_sleep(seconds: float) -> None:
@@ -116,4 +117,3 @@ def humanize_bytes(n: int) -> str:
             return f"{n:.1f} {unit}"
         n /= 1024
     return f"{n:.1f} TB"
-

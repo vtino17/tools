@@ -4,40 +4,40 @@ Google Dorker - Generate and execute Google dorks
 Membuat query Google dork yang powerful untuk recon.
 Usage: python google_dorker.py -d example.com
 """
+
 import argparse
 import sys
 import requests
 import webbrowser
 
-
 DORK_TEMPLATES = {
     "files": [
-        'site:{d} filetype:pdf',
-        'site:{d} filetype:doc',
-        'site:{d} filetype:docx',
-        'site:{d} filetype:xls',
-        'site:{d} filetype:xlsx',
-        'site:{d} filetype:csv',
-        'site:{d} filetype:txt',
-        'site:{d} filetype:log',
-        'site:{d} filetype:sql',
-        'site:{d} filetype:db',
-        'site:{d} filetype:bak',
-        'site:{d} filetype:conf',
-        'site:{d} filetype:cfg',
-        'site:{d} filetype:xml',
-        'site:{d} filetype:json',
+        "site:{d} filetype:pdf",
+        "site:{d} filetype:doc",
+        "site:{d} filetype:docx",
+        "site:{d} filetype:xls",
+        "site:{d} filetype:xlsx",
+        "site:{d} filetype:csv",
+        "site:{d} filetype:txt",
+        "site:{d} filetype:log",
+        "site:{d} filetype:sql",
+        "site:{d} filetype:db",
+        "site:{d} filetype:bak",
+        "site:{d} filetype:conf",
+        "site:{d} filetype:cfg",
+        "site:{d} filetype:xml",
+        "site:{d} filetype:json",
     ],
     "directories": [
-        'site:{d} intitle:index.of',
+        "site:{d} intitle:index.of",
         'site:{d} intitle:"index of"',
         'site:{d} "parent directory"',
-        'site:{d} inurl:admin',
-        'site:{d} inurl:login',
-        'site:{d} inurl:wp-admin',
-        'site:{d} inurl:phpmyadmin',
-        'site:{d} inurl:backup',
-        'site:{d} inurl:config',
+        "site:{d} inurl:admin",
+        "site:{d} inurl:login",
+        "site:{d} inurl:wp-admin",
+        "site:{d} inurl:phpmyadmin",
+        "site:{d} inurl:backup",
+        "site:{d} inurl:config",
     ],
     "vulnerable": [
         'site:{d} inurl:"php?id="',
@@ -79,9 +79,9 @@ DORK_TEMPLATES = {
         'site:{d} intext:"internal use only"',
     ],
     "subdomains": [
-        'site:*.{d}',
-        '-site:www.{d} site:{d}',
-        'site:*.{d} -www',
+        "site:*.{d}",
+        "-site:www.{d} site:{d}",
+        "site:*.{d} -www",
     ],
     "tech": [
         'site:{d} inurl:"/wp-content/"',
@@ -111,10 +111,12 @@ def generate_dorks(domain, categories=None):
 def execute_dork(query, count=10):
     """Execute a single Google dork"""
     try:
-        r = requests.get("https://www.google.com/search",
-                         params={"q": query, "num": count},
-                         headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
-                         timeout=10)
+        r = requests.get(
+            "https://www.google.com/search",
+            params={"q": query, "num": count},
+            headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+            timeout=10,
+        )
         return r.status_code == 200, r.text[:500] if r.status_code == 200 else None
     except:
         return False, None
@@ -123,9 +125,17 @@ def execute_dork(query, count=10):
 def main():
     parser = argparse.ArgumentParser(description="Google Dork Generator & Executor")
     parser.add_argument("-d", "--domain", required=True, help="Target domain")
-    parser.add_argument("-c", "--category", choices=list(DORK_TEMPLATES.keys()) + ["all"], default="all", help="Dork category")
+    parser.add_argument(
+        "-c",
+        "--category",
+        choices=list(DORK_TEMPLATES.keys()) + ["all"],
+        default="all",
+        help="Dork category",
+    )
     parser.add_argument("-o", "--output", help="Output to file")
-    parser.add_argument("--execute", action="store_true", help="Try to execute dorks (may be blocked)")
+    parser.add_argument(
+        "--execute", action="store_true", help="Try to execute dorks (may be blocked)"
+    )
     parser.add_argument("--no-urls", action="store_true", help="Don't generate search URLs")
     args = parser.parse_args()
 
@@ -141,6 +151,7 @@ def main():
         print(f"  {dork}")
         if not args.no_urls:
             from urllib.parse import quote_plus
+
             url = f"https://www.google.com/search?q={quote_plus(dork)}"
             print(f"  {url}")
         output.append(f"[{cat}] {dork}")
@@ -165,4 +176,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

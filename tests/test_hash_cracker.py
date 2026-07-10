@@ -12,6 +12,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "hash_cracker",
     BASE_DIR / "03-password" / "hash_cracker.py",
@@ -27,9 +28,7 @@ class TestHashCracker(unittest.TestCase):
     def setUpClass(cls):
         cls.wordlist = TEST_DIR / "fixtures" / "wordlist_test.txt"
         cls.wordlist.parent.mkdir(parents=True, exist_ok=True)
-        cls.wordlist.write_text(
-            "password\nadmin123\nhello\nsecret\n123456\ntest\n"
-        )
+        cls.wordlist.write_text("password\nadmin123\nhello\nsecret\n123456\ntest\n")
 
     def test_crack_md5_found(self):
         """MD5 'password' harus ketemu"""

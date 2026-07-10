@@ -14,13 +14,27 @@ from datetime import datetime
 
 import requests
 
-
 SESSION_COOKIE_NAMES = {
-    "sessionid", "phpsessid", "jsessionid", "asp.net_sessionid",
-    "sid", "authsid", "ssid", "laravel_session", "ci_session",
-    "cfid", "cftoken", "connect.sid", "od_sess", "csrf_token",
-    "django_sessid", "cake", "sails.sid", "wordpress_logged_in_",
-    "wp-settings-", "wordpress_sec_",
+    "sessionid",
+    "phpsessid",
+    "jsessionid",
+    "asp.net_sessionid",
+    "sid",
+    "authsid",
+    "ssid",
+    "laravel_session",
+    "ci_session",
+    "cfid",
+    "cftoken",
+    "connect.sid",
+    "od_sess",
+    "csrf_token",
+    "django_sessid",
+    "cake",
+    "sails.sid",
+    "wordpress_logged_in_",
+    "wp-settings-",
+    "wordpress_sec_",
 }
 
 CRITICAL_FLAGS = {"HttpOnly", "Secure"}
@@ -257,7 +271,9 @@ def print_report(results, set_cookie_headers, show_headers):
         if cookie["issues"]:
             print(f"      ── Issues ──")
             for severity, desc in cookie["issues"]:
-                tag = {"CRITICAL": "!!", "HIGH": "!!", "WARN": "! ", "INFO": "  "}.get(severity, "  ")
+                tag = {"CRITICAL": "!!", "HIGH": "!!", "WARN": "! ", "INFO": "  "}.get(
+                    severity, "  "
+                )
                 print(f"      [{tag}] [{severity}] {desc}")
 
         if cookie.get("jwt"):

@@ -12,6 +12,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "hash_identifier",
     BASE_DIR / "03-password" / "hash_identifier.py",

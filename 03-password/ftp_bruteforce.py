@@ -8,6 +8,7 @@ Usage:
   python ftp_bruteforce.py -t 192.168.1.1 -U users.txt -P passwords.txt --threads 20
   python ftp_bruteforce.py -t 192.168.1.1 --password hunter2 -U users.txt -o hasil.txt
 """
+
 import ftplib
 import argparse
 import sys
@@ -58,7 +59,18 @@ def try_ftp(target, port, username, password, timeout):
         return None
 
 
-def worker(q, target, port, timeout, found_event, found_lock, results, output_path, progress_lock, attempt_counter):
+def worker(
+    q,
+    target,
+    port,
+    timeout,
+    found_event,
+    found_lock,
+    results,
+    output_path,
+    progress_lock,
+    attempt_counter,
+):
     while not found_event.is_set():
         try:
             username, password = q.get(timeout=1)
@@ -86,7 +98,9 @@ def worker(q, target, port, timeout, found_event, found_lock, results, output_pa
                         except OSError as e:
                             print(f"[!] Gagal menyimpan ke {output_path}: {e}")
         elif result is None:
-            print(f"\n[!] Koneksi error untuk {username}:{password} — host mungkin down atau menolak")
+            print(
+                f"\n[!] Koneksi error untuk {username}:{password} — host mungkin down atau menolak"
+            )
             continue
 
         q.task_done()
@@ -108,9 +122,15 @@ def main():
     parser.add_argument("-U", "--userlist", help="File berisi daftar username")
     parser.add_argument("-w", "--password", help="Single password")
     parser.add_argument("-P", "--passlist", help="File berisi daftar password")
-    parser.add_argument("--timeout", type=int, default=5, help="Koneksi timeout dalam detik (default: 5)")
-    parser.add_argument("-T", "--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)")
-    parser.add_argument("-o", "--output", help="File output untuk menyimpan kredensial yang ditemukan")
+    parser.add_argument(
+        "--timeout", type=int, default=5, help="Koneksi timeout dalam detik (default: 5)"
+    )
+    parser.add_argument(
+        "-T", "--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)"
+    )
+    parser.add_argument(
+        "-o", "--output", help="File output untuk menyimpan kredensial yang ditemukan"
+    )
     args = parser.parse_args()
 
     if args.username:
@@ -181,8 +201,18 @@ def main():
     for _ in range(num_threads):
         t = threading.Thread(
             target=worker,
-            args=(q, args.target, args.port, args.timeout, found_event, found_lock,
-                  results, args.output, progress_lock, attempt_counter),
+            args=(
+                q,
+                args.target,
+                args.port,
+                args.timeout,
+                found_event,
+                found_lock,
+                results,
+                args.output,
+                progress_lock,
+                attempt_counter,
+            ),
             daemon=True,
         )
         t.start()

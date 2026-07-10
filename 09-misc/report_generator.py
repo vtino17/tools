@@ -46,10 +46,14 @@ def generate_html_report(
         if stype == "table" and isinstance(content, list):
             if content:
                 headers = content[0].keys()
-                html_rows.append("<table border='1' cellpadding='6' style='border-collapse:collapse'>")
+                html_rows.append(
+                    "<table border='1' cellpadding='6' style='border-collapse:collapse'>"
+                )
                 html_rows.append("<tr>" + "".join(f"<th>{h}</th>" for h in headers) + "</tr>")
                 for row in content:
-                    html_rows.append("<tr>" + "".join(f"<td>{row.get(h, '')}</td>" for h in headers) + "</tr>")
+                    html_rows.append(
+                        "<tr>" + "".join(f"<td>{row.get(h, '')}</td>" for h in headers) + "</tr>"
+                    )
                 html_rows.append("</table>")
         elif stype == "list" and isinstance(content, list):
             html_rows.append("<ul>")

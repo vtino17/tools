@@ -1,26 +1,26 @@
 """Manajemen konfigurasi dan API key OCySec OSINT."""
+
 import json
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
-
 
 CONFIG_DIR = Path.home() / ".ocysint"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULTS: Dict[str, Any] = {
     "api_keys": {
-        "hibp": "",            # HaveIBeenPwned
-        "shodan": "",          # Shodan
+        "hibp": "",  # HaveIBeenPwned
+        "shodan": "",  # Shodan
         "censys_id": "",
         "censys_secret": "",
-        "numverify": "",       # Numverify
-        "hunter": "",          # Hunter.io
-        "virustotal": "",      # VirusTotal
+        "numverify": "",  # Numverify
+        "hunter": "",  # Hunter.io
+        "virustotal": "",  # VirusTotal
         "securitytrails": "",
-        "dehashed": "",        # DeHashed (perlu subscription)
-        "intelx": "",          # Intelligence X
-        "leakcheck": "",       # LeakCheck
+        "dehashed": "",  # DeHashed (perlu subscription)
+        "intelx": "",  # Intelligence X
+        "leakcheck": "",  # LeakCheck
         "clearbit": "",
         "fullcontact": "",
     },
@@ -85,4 +85,3 @@ def set_api_key(name: str, value: str) -> None:
     cfg = load_config()
     cfg["api_keys"][name] = value
     save_config(cfg)
-

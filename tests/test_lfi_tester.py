@@ -12,6 +12,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "lfi_tester",
     BASE_DIR / "04-exploitation" / "lfi_tester.py",
@@ -41,6 +42,7 @@ class TestLFITester(unittest.TestCase):
         """Pattern deteksi mendeteksi /etc/passwd."""
         pattern, desc = lfi.DETECT_LINUX[0]
         import re
+
         content = "root:x:0:0:root:/root:/bin/bash\n"
         self.assertIsNotNone(re.search(pattern, content))
 
@@ -48,13 +50,17 @@ class TestLFITester(unittest.TestCase):
         """Pattern deteksi baris user /etc/passwd."""
         pattern, desc = lfi.DETECT_LINUX[1]
         import re
-        content = "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n"
+
+        content = (
+            "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n"
+        )
         self.assertIsNotNone(re.search(pattern, content))
 
     def test_detect_windows_win_ini(self):
         """Pattern deteksi windows/win.ini."""
         pattern, desc = lfi.DETECT_WINDOWS[0]
         import re
+
         content = "[fonts]\nsystem=dejavu\n"
         self.assertIsNotNone(re.search(pattern, content))
 
@@ -62,6 +68,7 @@ class TestLFITester(unittest.TestCase):
         """Pattern deteksi base64 root entry."""
         pattern, desc = lfi.DETECT_BASE64[0]
         import re
+
         content = "root:x:0:0:root:/root:/bin/bash\n"
         self.assertIsNotNone(re.search(pattern, content))
 
@@ -86,6 +93,7 @@ class TestLFITester(unittest.TestCase):
         mock_session_class.return_value = mock_session
 
         import re
+
         mock_resp = MagicMock()
         mock_resp.text = "root:x:0:0:root:/root:/bin/bash\nbin:x:1:1:bin:/bin:/sbin/nologin\n"
         mock_resp.status_code = 200
@@ -102,6 +110,7 @@ class TestLFITester(unittest.TestCase):
         mock_session_class.return_value = mock_session
 
         import re
+
         mock_resp = MagicMock()
         mock_resp.text = "[fonts]\nsystem=test\n[extensions]\n"
         mock_resp.status_code = 200
@@ -114,6 +123,7 @@ class TestLFITester(unittest.TestCase):
     def test_url_parameter_injection_params(self):
         """Parameter LFI disisipkan ke query URL."""
         import urllib.parse
+
         param = "file"
         payload = "../../../../../../etc/passwd"
         full_url = "http://target.com/index.php"
@@ -123,10 +133,13 @@ class TestLFITester(unittest.TestCase):
     def test_raw_url_injection(self):
         """Raw URL injection dengan traversal."""
         import urllib.parse
+
         url = "http://target.com/index.php"
         param = "page"
         payload = "../../../../../../etc/passwd"
-        full_url = url + ("&" if "?" in url else "?") + param + "=" + urllib.parse.quote(payload, safe="")
+        full_url = (
+            url + ("&" if "?" in url else "?") + param + "=" + urllib.parse.quote(payload, safe="")
+        )
         self.assertIn("page=..%2F..%2F..%2F..%2F..%2F..%2Fetc%2Fpasswd", full_url)
 
 

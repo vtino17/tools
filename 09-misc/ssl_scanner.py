@@ -4,6 +4,7 @@ SSL/TLS Scanner - Check SSL configuration
 Menganalisa sertifikat SSL dan konfigurasi TLS.
 Usage: python ssl_scanner.py -t target.com -p 443
 """
+
 import argparse
 import sys
 import socket
@@ -155,19 +156,19 @@ def main():
     print(f"  Serial: {info['serial']}")
 
     # Expiry
-    expiry = check_expiry(info['not_after'])
+    expiry = check_expiry(info["not_after"])
     if expiry:
         print(f"  Not Before: {info['not_before']}")
         print(f"  Not After: {info['not_after']}")
         print(f"  Days Remaining: {expiry['days_remaining']}")
-        if expiry['expired']:
+        if expiry["expired"]:
             print(f"  [!] EXPIRED")
-        elif expiry['days_remaining'] < 30:
+        elif expiry["days_remaining"] < 30:
             print(f"  [!] EXPIRES SOON")
 
-    if info['subject_alt_names']:
+    if info["subject_alt_names"]:
         print(f"  Subject Alt Names:")
-        for san in info['subject_alt_names']:
+        for san in info["subject_alt_names"]:
             print(f"    - {san}")
 
     # Check protocols
@@ -178,7 +179,9 @@ def main():
         status = "[!]" if "Not" in str(result) else "[+]"
         if "TLSv1.0" in name or "TLSv1.1" in name:
             status = "[!]" if "TLS" in str(result) and "Not" not in str(result) else "[+]"
-            print(f"  {status} {name}: {result} {'(DEPRECATED)' if 'TLS' in str(result) and 'Not' not in str(result) else ''}")
+            print(
+                f"  {status} {name}: {result} {'(DEPRECATED)' if 'TLS' in str(result) and 'Not' not in str(result) else ''}"
+            )
         else:
             print(f"  {status} {name}: {result}")
 
@@ -200,4 +203,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

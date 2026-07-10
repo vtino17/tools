@@ -31,6 +31,7 @@ from urllib.parse import urljoin
 try:
     import requests
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 except ImportError:
     print("[!] Modul 'requests' tidak ditemukan. Install: pip install requests")
@@ -123,8 +124,15 @@ def load_kubeconfig(path=None):
     return result
 
 
-def setup_session(server, token=None, ca_file=None, ca_data=None,
-                  client_cert=None, client_key=None, verify_ssl=True):
+def setup_session(
+    server,
+    token=None,
+    ca_file=None,
+    ca_data=None,
+    client_cert=None,
+    client_key=None,
+    verify_ssl=True,
+):
     """Set up requests session for Kubernetes API."""
     session = requests.Session()
     session.verify = verify_ssl
@@ -137,6 +145,7 @@ def setup_session(server, token=None, ca_file=None, ca_data=None,
         session.verify = ca_file
     elif ca_data:
         import tempfile
+
         decoded = base64.b64decode(ca_data)
         with tempfile.NamedTemporaryFile(delete=False, suffix=".crt") as tmp:
             tmp.write(decoded)
@@ -160,7 +169,12 @@ def k8s_get(session, server, path, namespace=None, label_selector=None):
     if label_selector:
         params["labelSelector"] = label_selector
     try:
-        resp = session.get(url, params=params if params else None, timeout=30, verify=session.verify if session.verify else False)
+        resp = session.get(
+            url,
+            params=params if params else None,
+            timeout=30,
+            verify=session.verify if session.verify else False,
+        )
         if resp.status_code == 200:
             return resp.json()
         elif resp.status_code == 401:
@@ -306,7 +320,9 @@ def enum_services(session, server, namespace=None):
         external_ips = svc["spec"].get("externalIPs", [])
         ports = [f"{p.get('port')}/{p.get('protocol')}" for p in svc["spec"].get("ports", [])]
         pfx = "[!]" if svc_type == "LoadBalancer" and external_ips else "[*]"
-        print(f"  {pfx} {ns}/{name} ({svc_type}) | {cluster_ip} | ports={ports} | ext={external_ips}")
+        print(
+            f"  {pfx} {ns}/{name} ({svc_type}) | {cluster_ip} | ports={ports} | ext={external_ips}"
+        )
     return items
 
 
@@ -314,7 +330,11 @@ def enum_deployments(session, server, namespace=None):
     """Enumerate deployments."""
     target = f"namespace={namespace}" if namespace else "semua namespace"
     print(f"\n--- Enumerasi Deployments ({target}) ---")
-    path = f"/apis/apps/v1/namespaces/{namespace}/deployments" if namespace else "/apis/apps/v1/deployments"
+    path = (
+        f"/apis/apps/v1/namespaces/{namespace}/deployments"
+        if namespace
+        else "/apis/apps/v1/deployments"
+    )
     data = k8s_get(session, server, path)
     if not data:
         return []
@@ -376,7 +396,11 @@ def enum_rbac(session, server, namespace=None):
     print("\n--- Enumerasi RBAC ---")
 
     print("\n[*] Roles:")
-    roles_path = f"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/roles" if namespace else "/apis/rbac.authorization.k8s.io/v1/roles"
+    roles_path = (
+        f"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/roles"
+        if namespace
+        else "/apis/rbac.authorization.k8s.io/v1/roles"
+    )
     roles_data = k8s_get(session, server, roles_path)
     if roles_data:
         items = roles_data.get("items", [])
@@ -390,7 +414,11 @@ def enum_rbac(session, server, namespace=None):
             print(f"  {pfx} {ns}/{name} (rules={len(rules)}){' WILDCARD' if has_wildcard else ''}")
 
     print("\n[*] RoleBindings:")
-    rb_path = f"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/rolebindings" if namespace else "/apis/rbac.authorization.k8s.io/v1/rolebindings"
+    rb_path = (
+        f"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/rolebindings"
+        if namespace
+        else "/apis/rbac.authorization.k8s.io/v1/rolebindings"
+    )
     rb_data = k8s_get(session, server, rb_path)
     if rb_data:
         items = rb_data.get("items", [])
@@ -401,16 +429,22 @@ def enum_rbac(session, server, namespace=None):
             role_ref = rb.get("roleRef", {})
             subjects = rb.get("subjects", [])
             subj_str = ", ".join(s.get("name", "?") for s in subjects[:3])
-            print(f"  [*] {ns}/{name} -> {role_ref.get('kind','?')}/{role_ref.get('name','?')} | subjects=[{subj_str}]")
+            print(
+                f"  [*] {ns}/{name} -> {role_ref.get('kind','?')}/{role_ref.get('name','?')} | subjects=[{subj_str}]"
+            )
 
     print("\n[*] ClusterRoles:")
     cr_data = k8s_get(session, server, "/apis/rbac.authorization.k8s.io/v1/clusterroles")
     if cr_data:
         items = cr_data.get("items", [])
-        dangerous = [cr for cr in items if any(
-            "*" in str(rule.get("resources", [])) or "*" in str(rule.get("verbs", []))
-            for rule in cr.get("rules", [])
-        )]
+        dangerous = [
+            cr
+            for cr in items
+            if any(
+                "*" in str(rule.get("resources", [])) or "*" in str(rule.get("verbs", []))
+                for rule in cr.get("rules", [])
+            )
+        ]
         print(f"[+] ClusterRoles: {len(items)} (dangerous={len(dangerous)})")
         for cr in items[:15]:
             name = cr["metadata"]["name"]
@@ -430,7 +464,9 @@ def enum_rbac(session, server, namespace=None):
             role_ref = crb.get("roleRef", {})
             subjects = crb.get("subjects", [])
             subj_str = ", ".join(s.get("name", "?") for s in subjects[:3])
-            print(f"  [*] {name} -> {role_ref.get('kind','?')}/{role_ref.get('name','?')} | subjects=[{subj_str}]")
+            print(
+                f"  [*] {name} -> {role_ref.get('kind','?')}/{role_ref.get('name','?')} | subjects=[{subj_str}]"
+            )
 
 
 def check_service_token(session, server):
@@ -537,8 +573,12 @@ Contoh:
         print("[!] SSL verification dimatikan!")
 
     session = setup_session(
-        server, token=token, ca_file=ca_file, ca_data=ca_data,
-        client_cert=client_cert, client_key=client_key,
+        server,
+        token=token,
+        ca_file=ca_file,
+        ca_data=ca_data,
+        client_cert=client_cert,
+        client_key=client_key,
         verify_ssl=verify_ssl,
     )
 

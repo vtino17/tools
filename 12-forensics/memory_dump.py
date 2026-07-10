@@ -35,6 +35,7 @@ def get_process_list():
             try:
                 import ctypes
                 from ctypes import wintypes
+
                 kernel32 = ctypes.windll.kernel32
                 psapi = ctypes.windll.psapi
 
@@ -62,7 +63,9 @@ def get_process_list():
                 if kernel32.Process32First(h_process_snap, ctypes.byref(pe32)):
                     while True:
                         name = pe32.szExeFile.decode("utf-8", errors="replace")
-                        processes.append((pe32.th32ProcessID, name, pe32.cntThreads, pe32.th32ParentProcessID))
+                        processes.append(
+                            (pe32.th32ProcessID, name, pe32.cntThreads, pe32.th32ParentProcessID)
+                        )
                         if not kernel32.Process32Next(h_process_snap, ctypes.byref(pe32)):
                             break
 
@@ -74,7 +77,9 @@ def get_process_list():
                         if h_process:
                             pmc = ctypes.c_ulonglong()
                             pmc2 = ctypes.c_ulonglong()
-                            if psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+                            if psapi.GetProcessMemoryInfo(
+                                h_process, ctypes.byref(pmc), ctypes.sizeof(pmc)
+                            ):
                                 mem_bytes = pmc.value
                             else:
                                 mem_bytes = 0
@@ -88,7 +93,9 @@ def get_process_list():
             except ImportError:
                 result = subprocess.run(
                     'Get-Process | Select-Object Id, ProcessName, Threads, @{N="MemMB";E={[math]::Round($_.WorkingSet64/1MB,2)}}',
-                    shell=True, capture_output=True, text=True,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
                     executable="powershell.exe",
                 )
                 for line in result.stdout.strip().split("\n"):
@@ -100,7 +107,8 @@ def get_process_list():
         else:
             result = subprocess.run(
                 ["ps", "-eo", "pid,comm,rss"],
-                capture_output=True, text=True,
+                capture_output=True,
+                text=True,
             )
             for line in result.stdout.strip().split("\n")[1:]:
                 parts = line.strip().split(None, 2)
@@ -146,7 +154,9 @@ def dump_process_windows(pid, output_file):
             print(f"[*] Mencoba Procdump: {cmd}")
             subprocess.run(cmd, shell=True, timeout=120)
             if os.path.exists(dump_path) and os.path.getsize(dump_path) > 0:
-                print(f"[+] Dump berhasil via Procdump: {dump_path} ({os.path.getsize(dump_path)} bytes)")
+                print(
+                    f"[+] Dump berhasil via Procdump: {dump_path} ({os.path.getsize(dump_path)} bytes)"
+                )
                 return dump_path
         except Exception as e:
             print(f"[!] Procdump gagal: {e}")
@@ -177,7 +187,9 @@ def dump_memory_linux(output_file):
                         print(f"\r[*] Terbaca: {copied / (1024**2):.1f} MB", end="", flush=True)
                     print()
             if os.path.getsize(dump_path) > 0:
-                print(f"[+] Dump berhasil via /dev/mem: {dump_path} ({os.path.getsize(dump_path)} bytes)")
+                print(
+                    f"[+] Dump berhasil via /dev/mem: {dump_path} ({os.path.getsize(dump_path)} bytes)"
+                )
                 return dump_path
         except Exception as e:
             print(f"\n[!] /dev/mem gagal: {e}")
@@ -210,14 +222,32 @@ def analyze_processes():
     print("-" * 90)
 
     suspicious_names = [
-        "mimikatz", "procmon", "procdump", "cuckoo", "vmwaretray",
-        "vboxservice", "vboxtray", "splunk", "wireshark", "dumpcap",
-        "netcat", "nc.exe", "ncat", "certutil", "bitsadmin",
-        "rundll32", "regsvr32", "mshta", "cscript", "wscript",
+        "mimikatz",
+        "procmon",
+        "procdump",
+        "cuckoo",
+        "vmwaretray",
+        "vboxservice",
+        "vboxtray",
+        "splunk",
+        "wireshark",
+        "dumpcap",
+        "netcat",
+        "nc.exe",
+        "ncat",
+        "certutil",
+        "bitsadmin",
+        "rundll32",
+        "regsvr32",
+        "mshta",
+        "cscript",
+        "wscript",
     ]
 
     suspicious_parents = [
-        "wmiprvse", "svchost", "services",
+        "wmiprvse",
+        "svchost",
+        "services",
     ]
 
     for entry in processes:
@@ -245,8 +275,10 @@ def analyze_processes():
     if OS_NAME == "Windows":
         try:
             result = subprocess.run(
-                'Get-Process | Measure-Object | Select-Object -ExpandProperty Count',
-                shell=True, capture_output=True, text=True,
+                "Get-Process | Measure-Object | Select-Object -ExpandProperty Count",
+                shell=True,
+                capture_output=True,
+                text=True,
                 executable="powershell.exe",
             )
             ps_count = int(result.stdout.strip())
@@ -273,9 +305,7 @@ def extract_strings(filepath, min_length=6):
     print(f"[*] Ukuran file: {file_size:,} bytes ({file_size / (1024**2):.1f} MB)")
 
     ascii_pattern = re.compile(rb"[\x20-\x7E]{%d,}" % min_length)
-    unicode_pattern = re.compile(
-        rb"(?:[\x20-\x7E]\x00){%d,}" % min_length
-    )
+    unicode_pattern = re.compile(rb"(?:[\x20-\x7E]\x00){%d,}" % min_length)
 
     strings_found = []
 
@@ -310,8 +340,7 @@ def extract_strings(filepath, min_length=6):
                     try:
                         s = raw.decode("utf-16-le", errors="replace")
                         if len(s) >= min_length and all(
-                            c == "\x00" or 0x20 <= ord(c) <= 0x7E or ord(c) > 0x7F
-                            for c in s
+                            c == "\x00" or 0x20 <= ord(c) <= 0x7E or ord(c) > 0x7F for c in s
                         ):
                             strings_found.append((offset + match.start(), "UTF16", s))
                     except Exception:
@@ -334,20 +363,22 @@ def extract_strings(filepath, min_length=6):
 
     interesting = []
     for offset, enc, s in strings_found:
-        if any([
-            ip_pattern.search(s),
-            url_pattern.search(s),
-            email_pattern.search(s),
-            "password" in s.lower(),
-            "username" in s.lower(),
-            "login" in s.lower(),
-            "cmd.exe" in s.lower(),
-            "powershell" in s.lower(),
-            "http" in s.lower(),
-            "registry" in s.lower(),
-            "rundll32" in s.lower(),
-            path_pattern.search(s),
-        ]):
+        if any(
+            [
+                ip_pattern.search(s),
+                url_pattern.search(s),
+                email_pattern.search(s),
+                "password" in s.lower(),
+                "username" in s.lower(),
+                "login" in s.lower(),
+                "cmd.exe" in s.lower(),
+                "powershell" in s.lower(),
+                "http" in s.lower(),
+                "registry" in s.lower(),
+                "rundll32" in s.lower(),
+                path_pattern.search(s),
+            ]
+        ):
             interesting.append((offset, enc, s))
 
     if interesting:
@@ -419,14 +450,24 @@ Contoh:
   %(prog)s --mode analyze               (analisis proses berjalan)
         """,
     )
-    parser.add_argument("--mode", choices=["dump", "analyze", "strings"], required=True,
-                        help="Mode operasi: dump (akuisisi), analyze (analisis), strings (ekstrak string)")
-    parser.add_argument("--pid", type=int, default=0,
-                        help="PID proses untuk dump (hanya mode dump)")
-    parser.add_argument("--output", type=str, default="",
-                        help="Path file output (dump / input untuk analyze & strings)")
-    parser.add_argument("--size", type=int, default=6,
-                        help="Panjang minimum string (default: 6, mode strings)")
+    parser.add_argument(
+        "--mode",
+        choices=["dump", "analyze", "strings"],
+        required=True,
+        help="Mode operasi: dump (akuisisi), analyze (analisis), strings (ekstrak string)",
+    )
+    parser.add_argument(
+        "--pid", type=int, default=0, help="PID proses untuk dump (hanya mode dump)"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="",
+        help="Path file output (dump / input untuk analyze & strings)",
+    )
+    parser.add_argument(
+        "--size", type=int, default=6, help="Panjang minimum string (default: 6, mode strings)"
+    )
 
     args = parser.parse_args()
 

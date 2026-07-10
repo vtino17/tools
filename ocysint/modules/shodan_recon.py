@@ -1,4 +1,5 @@
 """Shodan & Censys reconnaissance (perlu API key)."""
+
 from typing import Any, Dict
 
 import requests
@@ -11,10 +12,12 @@ def shodan_host(ip: str, api_key: str = "") -> Dict[str, Any]:
     if not api_key:
         return {"skipped": True, "reason": "no_shodan_api_key"}
     try:
-        r = requests.get(f"https://api.shodan.io/shodan/host/{ip}",
-                         params={"key": api_key},
-                         headers={"User-Agent": random_ua()},
-                         timeout=20)
+        r = requests.get(
+            f"https://api.shodan.io/shodan/host/{ip}",
+            params={"key": api_key},
+            headers={"User-Agent": random_ua()},
+            timeout=20,
+        )
         if r.status_code == 200:
             d = r.json()
             return {
@@ -49,9 +52,11 @@ def shodan_dns(domain: str, api_key: str = "") -> Dict[str, Any]:
     if not api_key:
         return {"skipped": True, "reason": "no_shodan_api_key"}
     try:
-        r = requests.get(f"https://api.shodan.io/dns/resolve",
-                         params={"hostnames": domain, "key": api_key},
-                         timeout=15)
+        r = requests.get(
+            f"https://api.shodan.io/dns/resolve",
+            params={"hostnames": domain, "key": api_key},
+            timeout=15,
+        )
         if r.status_code == 200:
             return {"source": "shodan", "resolved": r.json()}
         return {"error": f"http_{r.status_code}"}
@@ -108,4 +113,3 @@ def run_shodan_recon(target: str, kind: str = "ip") -> Dict[str, Any]:
     if not out["sources"]:
         out["note"] = "Tidak ada Shodan/Censys API key. Set via: ocysint config set shodan <key>"
     return out
-

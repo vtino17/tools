@@ -34,30 +34,70 @@ except ImportError:
 BOTO3_AVAILABLE = False
 try:
     import boto3
+
     BOTO3_AVAILABLE = True
 except ImportError:
     pass
 
 BUCKET_PATTERNS = [
-    "{company}", "{company}-prod", "{company}-dev", "{company}-staging",
-    "{company}-test", "{company}-backup", "{company}-logs", "{company}-data",
-    "{company}-assets", "{company}-static", "{company}-media", "{company}-cdn",
-    "{company}-files", "{company}-images", "{company}-upload", "{company}-public",
-    "{company}-private", "{company}-config", "{company}-terraform",
-    "{company}-cloudformation", "{company}-artifacts", "{company}-build",
-    "{company}-release", "{company}-db-backup", "{company}-db-backups",
-    "{company}-www", "{company}-web", "{company}-app", "{company}-api",
-    "prod-{company}", "dev-{company}", "staging-{company}",
+    "{company}",
+    "{company}-prod",
+    "{company}-dev",
+    "{company}-staging",
+    "{company}-test",
+    "{company}-backup",
+    "{company}-logs",
+    "{company}-data",
+    "{company}-assets",
+    "{company}-static",
+    "{company}-media",
+    "{company}-cdn",
+    "{company}-files",
+    "{company}-images",
+    "{company}-upload",
+    "{company}-public",
+    "{company}-private",
+    "{company}-config",
+    "{company}-terraform",
+    "{company}-cloudformation",
+    "{company}-artifacts",
+    "{company}-build",
+    "{company}-release",
+    "{company}-db-backup",
+    "{company}-db-backups",
+    "{company}-www",
+    "{company}-web",
+    "{company}-app",
+    "{company}-api",
+    "prod-{company}",
+    "dev-{company}",
+    "staging-{company}",
 ]
 
 REGIONS = [
-    "us-east-1", "us-east-2", "us-west-1", "us-west-2",
-    "eu-west-1", "eu-west-2", "eu-west-3", "eu-central-1", "eu-central-2",
-    "ap-southeast-1", "ap-southeast-2", "ap-southeast-3",
-    "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
-    "ap-south-1", "ap-south-2", "sa-east-1",
-    "ca-central-1", "me-south-1", "me-central-1",
-    "af-south-1", "il-central-1",
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2",
+    "eu-west-1",
+    "eu-west-2",
+    "eu-west-3",
+    "eu-central-1",
+    "eu-central-2",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ap-southeast-3",
+    "ap-northeast-1",
+    "ap-northeast-2",
+    "ap-northeast-3",
+    "ap-south-1",
+    "ap-south-2",
+    "sa-east-1",
+    "ca-central-1",
+    "me-south-1",
+    "me-central-1",
+    "af-south-1",
+    "il-central-1",
 ]
 
 
@@ -177,7 +217,8 @@ def active_enum_s3(session, region="us-east-1"):
             try:
                 acl = s3.get_bucket_acl(Bucket=name)
                 public = any(
-                    g.get("URI") in (
+                    g.get("URI")
+                    in (
                         "http://acs.amazonaws.com/groups/global/AllUsers",
                         "http://acs.amazonaws.com/groups/global/AuthenticatedUsers",
                     )
@@ -191,7 +232,9 @@ def active_enum_s3(session, region="us-east-1"):
                     encrypted = False
                 pfx = "[!]" if public else "[+]"
                 v_status = "Ya" if versioning.get("Status") else "Tidak"
-                print(f"  {pfx} {name} (public={public}, versioning={v_status}, encrypted={encrypted})")
+                print(
+                    f"  {pfx} {name} (public={public}, versioning={v_status}, encrypted={encrypted})"
+                )
             except Exception as e:
                 print(f"  [*] {name} (tidak bisa membaca ACL: {e})")
     except Exception as e:
@@ -221,7 +264,9 @@ def active_enum_iam(session):
             admin = False
             try:
                 attached = iam.list_attached_role_policies(RoleName=r["RoleName"])
-                admin = any("AdministratorAccess" in p["PolicyName"] for p in attached["AttachedPolicies"])
+                admin = any(
+                    "AdministratorAccess" in p["PolicyName"] for p in attached["AttachedPolicies"]
+                )
             except Exception:
                 pass
             pfx = "[!]" if admin else "[*]"
@@ -251,7 +296,9 @@ def active_enum_ec2(session, region="us-east-1"):
                 pub_ip = inst.get("PublicIpAddress", "Tidak")
                 sg = [g["GroupName"] for g in inst.get("SecurityGroups", [])]
                 pfx = "[!]" if pub_ip != "Tidak" else "[*]"
-                print(f"  {pfx} {name} ({inst['InstanceId']}) | {inst['State']['Name']} | public_ip={pub_ip} | SG={sg}")
+                print(
+                    f"  {pfx} {name} ({inst['InstanceId']}) | {inst['State']['Name']} | public_ip={pub_ip} | SG={sg}"
+                )
     except Exception as e:
         print(f"[!] Gagal enumerasi EC2: {e}")
 
@@ -267,7 +314,9 @@ def active_enum_rds(session, region="us-east-1"):
             pub = db.get("PubliclyAccessible", False)
             encrypted = db.get("StorageEncrypted", False)
             pfx = "[!]" if pub else "[+]"
-            print(f"  {pfx} {db['DBInstanceIdentifier']} ({db['Engine']} {db.get('EngineVersion','?')}) | public={pub} | encrypted={encrypted}")
+            print(
+                f"  {pfx} {db['DBInstanceIdentifier']} ({db['Engine']} {db.get('EngineVersion','?')}) | public={pub} | encrypted={encrypted}"
+            )
     except Exception as e:
         print(f"[!] Gagal enumerasi RDS: {e}")
 
@@ -282,9 +331,14 @@ def active_enum_lambda(session, region="us-east-1"):
         for f in functions["Functions"]:
             vpc = "vpc" if f.get("VpcConfig", {}).get("VpcId") else "no-vpc"
             env_vars = list(f.get("Environment", {}).get("Variables", {}).keys())
-            has_secrets = any("SECRET" in k.upper() or "PASSWORD" in k.upper() or "KEY" in k.upper() for k in env_vars)
+            has_secrets = any(
+                "SECRET" in k.upper() or "PASSWORD" in k.upper() or "KEY" in k.upper()
+                for k in env_vars
+            )
             pfx = "[!]" if has_secrets else "[*]"
-            print(f"  {pfx} {f['FunctionName']} ({f['Runtime']}) | {vpc} | env_has_secrets={has_secrets}")
+            print(
+                f"  {pfx} {f['FunctionName']} ({f['Runtime']}) | {vpc} | env_has_secrets={has_secrets}"
+            )
     except Exception as e:
         print(f"[!] Gagal enumerasi Lambda: {e}")
 
@@ -325,14 +379,20 @@ Contoh:
         """,
     )
     parser.add_argument("--company", help="Nama perusahaan untuk enumerasi pasif")
-    parser.add_argument("--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)")
+    parser.add_argument(
+        "--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)"
+    )
     parser.add_argument("--profile", help="AWS profile (dari ~/.aws/credentials)")
     parser.add_argument("--access-key", help="AWS Access Key ID")
     parser.add_argument("--secret-key", help="AWS Secret Access Key")
     parser.add_argument("--region", default="us-east-1", help="AWS region (default: us-east-1)")
-    parser.add_argument("--service", default="all", help="Service untuk enumerasi: s3|iam|ec2|rds|lambda|all")
+    parser.add_argument(
+        "--service", default="all", help="Service untuk enumerasi: s3|iam|ec2|rds|lambda|all"
+    )
     parser.add_argument("--bucket-wordlist", help="Wordlist untuk fuzzing nama bucket")
-    parser.add_argument("--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)")
+    parser.add_argument(
+        "--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)"
+    )
     parser.add_argument("--timeout", type=int, default=5, help="Timeout HTTP (detik, default: 5)")
     parser.add_argument("--output", help="Simpan hasil ke file JSON")
     args = parser.parse_args()

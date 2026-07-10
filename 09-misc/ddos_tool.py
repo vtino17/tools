@@ -4,6 +4,7 @@ Stress Test Tool (Authorized Load Testing Only)
 HTTP/HTTPS load tester - Authorized stress test only.
 Usage: python ddos_tool.py -u http://target.com -c 50 -d 30
 """
+
 import argparse
 import sys
 import time
@@ -55,7 +56,11 @@ def stress_test(url, num_threads, duration, method, headers, body):
     start_time = time.time()
     while time.time() < end_time:
         elapsed = time.time() - start_time
-        print(f"\r[*] {elapsed:.0f}s elapsed | Requests: {request_count[0]} | Success: {success_count[0]} | Errors: {error_count[0]}", end="", flush=True)
+        print(
+            f"\r[*] {elapsed:.0f}s elapsed | Requests: {request_count[0]} | Success: {success_count[0]} | Errors: {error_count[0]}",
+            end="",
+            flush=True,
+        )
         time.sleep(1)
 
     print("\n")
@@ -103,4 +108,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

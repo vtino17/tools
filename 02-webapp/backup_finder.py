@@ -35,9 +35,29 @@ except Exception:
 # ═══════════════════════════════
 
 BACKUP_EXTENSIONS = [
-    ".bak", ".old", ".backup", ".swp", ".swo", ".save", ".orig", ".tmp",
-    ".txt", ".zip", ".tar.gz", ".tar", ".gz", ".sql", ".7z", ".rar",
-    ".tgz", ".bz2", ".xz", ".log", ".dump", ".export", ".csv",
+    ".bak",
+    ".old",
+    ".backup",
+    ".swp",
+    ".swo",
+    ".save",
+    ".orig",
+    ".tmp",
+    ".txt",
+    ".zip",
+    ".tar.gz",
+    ".tar",
+    ".gz",
+    ".sql",
+    ".7z",
+    ".rar",
+    ".tgz",
+    ".bz2",
+    ".xz",
+    ".log",
+    ".dump",
+    ".export",
+    ".csv",
 ]
 
 # ═══════════════════════════════
@@ -45,10 +65,10 @@ BACKUP_EXTENSIONS = [
 # ═══════════════════════════════
 
 NAMING_PATTERNS = [
-    "{name}~",                    # index.php~
-    ".{name}.swp",                # .index.php.swp
-    "copy of {name}",             # Copy of index.php
-    "{name}(1)",                  # index.php(1)
+    "{name}~",  # index.php~
+    ".{name}.swp",  # .index.php.swp
+    "copy of {name}",  # Copy of index.php
+    "{name}(1)",  # index.php(1)
     "{name}(2)",
     "{name}.{ext}~",
     "{name} copy",
@@ -75,16 +95,34 @@ NAMING_PATTERNS = [
 # ═══════════════════════════════
 
 DEFAULT_PAGES = [
-    "index.php", "index.html", "index.asp", "index.aspx", "index.jsp",
-    "config.php", "wp-config.php", "configuration.php", "settings.php",
-    "database.php", "db.php", "admin.php", "login.php", "header.php",
-    "footer.php", "functions.php", "style.css", "app.js", "main.js",
-    ".env", "docker-compose.yml", "Dockerfile",
+    "index.php",
+    "index.html",
+    "index.asp",
+    "index.aspx",
+    "index.jsp",
+    "config.php",
+    "wp-config.php",
+    "configuration.php",
+    "settings.php",
+    "database.php",
+    "db.php",
+    "admin.php",
+    "login.php",
+    "header.php",
+    "footer.php",
+    "functions.php",
+    "style.css",
+    "app.js",
+    "main.js",
+    ".env",
+    "docker-compose.yml",
+    "Dockerfile",
 ]
 
 # ═══════════════════════════════
 # HEADERS
 # ═══════════════════════════════
+
 
 def _get_headers():
     return {
@@ -97,6 +135,7 @@ def _get_headers():
 # ═══════════════════════════════
 # CORE FUNCTIONS
 # ═══════════════════════════════
+
 
 def _build_url(base, path):
     base = base.rstrip("/")
@@ -168,6 +207,7 @@ def generate_targets(base_url, pages, extensions):
 # MAIN
 # ═══════════════════════════════
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Backup File Scanner - Menemukan file backup dan sisa di target",
@@ -180,13 +220,27 @@ Contoh:
   python backup_finder.py -u https://target.com/subdir/ -e .zip,.sql,.bak
         """,
     )
-    parser.add_argument("-u", "--url", required=True, help="URL target (contoh: https://target.com)")
-    parser.add_argument("-f", "--file", dest="wordlist", help="File wordlist halaman yang akan dicek")
-    parser.add_argument("-e", "--extensions", default=".bak,.old,.backup,.swp,.save,.orig,.tmp,.zip,.sql,.txt,.tar.gz,.7z,.rar",
-                        help="Ekstensi backup yang dicek (dipisah koma, default: umum)")
-    parser.add_argument("-t", "--threads", type=int, default=10, help="Jumlah thread paralel (default: 10)")
-    parser.add_argument("--timeout", type=int, default=10, help="Timeout per request dalam detik (default: 10)")
-    parser.add_argument("--all", action="store_true", help="Tambahkan pola naming kompleks (lebih banyak request)")
+    parser.add_argument(
+        "-u", "--url", required=True, help="URL target (contoh: https://target.com)"
+    )
+    parser.add_argument(
+        "-f", "--file", dest="wordlist", help="File wordlist halaman yang akan dicek"
+    )
+    parser.add_argument(
+        "-e",
+        "--extensions",
+        default=".bak,.old,.backup,.swp,.save,.orig,.tmp,.zip,.sql,.txt,.tar.gz,.7z,.rar",
+        help="Ekstensi backup yang dicek (dipisah koma, default: umum)",
+    )
+    parser.add_argument(
+        "-t", "--threads", type=int, default=10, help="Jumlah thread paralel (default: 10)"
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=10, help="Timeout per request dalam detik (default: 10)"
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="Tambahkan pola naming kompleks (lebih banyak request)"
+    )
     args = parser.parse_args()
 
     base_url = args.url.rstrip("/")

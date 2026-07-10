@@ -30,14 +30,56 @@ except ImportError:
     sys.exit(1)
 
 DEFAULT_WORDLIST = [
-    "www", "mail", "ftp", "admin", "dev", "test", "staging",
-    "webmail", "remote", "blog", "shop", "api", "cdn", "m",
-    "mobile", "portal", "vpn", "ns1", "ns2", "dns", "dns1",
-    "dns2", "smtp", "pop", "pop3", "imap", "ldap", "mysql",
-    "db", "sql", "oracle", "secure", "ssl", "auth", "login",
-    "gateway", "proxy", "firewall", "monitor", "status", "uptime",
-    "wiki", "docs", "support", "help", "apps", "cloud", "files",
-    "backup", "intranet",
+    "www",
+    "mail",
+    "ftp",
+    "admin",
+    "dev",
+    "test",
+    "staging",
+    "webmail",
+    "remote",
+    "blog",
+    "shop",
+    "api",
+    "cdn",
+    "m",
+    "mobile",
+    "portal",
+    "vpn",
+    "ns1",
+    "ns2",
+    "dns",
+    "dns1",
+    "dns2",
+    "smtp",
+    "pop",
+    "pop3",
+    "imap",
+    "ldap",
+    "mysql",
+    "db",
+    "sql",
+    "oracle",
+    "secure",
+    "ssl",
+    "auth",
+    "login",
+    "gateway",
+    "proxy",
+    "firewall",
+    "monitor",
+    "status",
+    "uptime",
+    "wiki",
+    "docs",
+    "support",
+    "help",
+    "apps",
+    "cloud",
+    "files",
+    "backup",
+    "intranet",
 ]
 
 
@@ -94,7 +136,9 @@ def attempt_zone_transfer(domain: str, ns_ip: str, ns_name: str) -> dict[str, li
                 for rdata in rdset:
                     records[rtype].append(f"{name} -> {rdata}")
 
-        log_success(f"  Zone transfer BERHASIL! {sum(len(v) for v in records.values())} record ditemukan.")
+        log_success(
+            f"  Zone transfer BERHASIL! {sum(len(v) for v in records.values())} record ditemukan."
+        )
         return dict(records)
     except dns.exception.DNSException as e:
         log_error(f"  Zone transfer gagal: {e}")
@@ -195,7 +239,9 @@ Contoh:
         """,
     )
     parser.add_argument("--domain", "-d", required=True, help="Domain target")
-    parser.add_argument("--nameserver", "-n", help="Nameserver spesifik (auto-discover jika kosong)")
+    parser.add_argument(
+        "--nameserver", "-n", help="Nameserver spesifik (auto-discover jika kosong)"
+    )
     parser.add_argument("--wordlist", "-w", help="File wordlist subdomain (opsional)")
     parser.add_argument("--no-brute", action="store_true", help="Lewati brute-force subdomain")
     parser.add_argument("--no-reverse", action="store_true", help="Lewati reverse DNS lookup")
@@ -255,7 +301,8 @@ Contoh:
     display_records(dict(all_records), f"Hasil Enumerasi DNS: {domain}")
 
     discovered = [
-        e for rtype in ["A", "AAAA", "MX", "CNAME", "NS", "SOA", "TXT", "PTR"]
+        e
+        for rtype in ["A", "AAAA", "MX", "CNAME", "NS", "SOA", "TXT", "PTR"]
         for e in all_records.get(rtype, [])
         if e not in ("(tidak ditemukan)",)
     ]

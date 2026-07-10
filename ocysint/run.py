@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """OCySec OSINT Framework - CLI entry point. Authorized Pentest Use Only."""
+
 import argparse
 import os
 import sys
@@ -20,7 +21,6 @@ from modules.phone_recon import run_phone_recon
 from modules.shodan_recon import run_shodan_recon
 from modules.username_recon import filter_found, run_username_recon
 from reports.generator import save_report
-
 
 
 def cmd_email(args):
@@ -144,8 +144,14 @@ def cmd_all(args):
         out["email"] = cmd_email(argparse.Namespace(email=target, breach=True, leak=True))
     if target.replace("+", "").replace("-", "").isdigit():
         out["phone"] = cmd_phone(argparse.Namespace(phone=target))
-    if "." in target and "@" not in target and not target.replace("+", "").replace("-", "").isdigit():
-        out["domain"] = cmd_domain(argparse.Namespace(domain=target, no_subdomain=False, shodan=True))
+    if (
+        "." in target
+        and "@" not in target
+        and not target.replace("+", "").replace("-", "").isdigit()
+    ):
+        out["domain"] = cmd_domain(
+            argparse.Namespace(domain=target, no_subdomain=False, shodan=True)
+        )
     out["username"] = cmd_username(argparse.Namespace(username=target, concurrency=20))
     return out
 
@@ -182,9 +188,10 @@ def maybe_save(args, data, target):
         print(f"  - {fmt}: {p}")
 
 
-
 def build_parser():
-    p = argparse.ArgumentParser(prog="ocysint", description="OCySec OSINT Framework - Authorized Pentest Use Only")
+    p = argparse.ArgumentParser(
+        prog="ocysint", description="OCySec OSINT Framework - Authorized Pentest Use Only"
+    )
     p.add_argument("--report", choices=["json", "txt", "html", "all"], help="Generate report")
     p.add_argument("--output", help="Output directory untuk report")
     p.add_argument("--no-report", action="store_true")
@@ -256,11 +263,18 @@ def main():
         parser.print_help()
         return 1
 
-    target_label = (getattr(args, "email", None) or getattr(args, "username", None)
-                    or getattr(args, "phone", None) or getattr(args, "domain", None)
-                    or getattr(args, "ip", None) or getattr(args, "file", None)
-                    or getattr(args, "dork", None) or getattr(args, "password", None)
-                    or getattr(args, "target", None) or "config")
+    target_label = (
+        getattr(args, "email", None)
+        or getattr(args, "username", None)
+        or getattr(args, "phone", None)
+        or getattr(args, "domain", None)
+        or getattr(args, "ip", None)
+        or getattr(args, "file", None)
+        or getattr(args, "dork", None)
+        or getattr(args, "password", None)
+        or getattr(args, "target", None)
+        or "config"
+    )
 
     try:
         result = args.func(args)
@@ -270,6 +284,7 @@ def main():
     except Exception as e:
         err(f"Error: {e}")
         import traceback
+
         if os.environ.get("OCYSINT_DEBUG"):
             traceback.print_exc()
         return 1

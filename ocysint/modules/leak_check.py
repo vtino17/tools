@@ -7,6 +7,7 @@ disertakan atau di-cache lokal. Anda harus menyediakan API key Anda sendiri
 
 Semua permintaan dilakukan secara live ke server resmi.
 """
+
 import base64
 from typing import Any, Dict, List
 
@@ -22,7 +23,11 @@ def dehashed_search(query: str, field: str = "email", api_key: str = "") -> Dict
     field: email | username | password | ip_address | name | phone | domain
     """
     if not api_key:
-        return {"skipped": True, "reason": "no_dehashed_api_key", "note": "Set via: ocysint config set dehashed <key>"}
+        return {
+            "skipped": True,
+            "reason": "no_dehashed_api_key",
+            "note": "Set via: ocysint config set dehashed <key>",
+        }
     user, _, key = api_key.partition(":")
     if not key:
         return {"error": "Format DeHashed key harus 'email:key'"}
@@ -58,7 +63,13 @@ def intelx_search(query: str, api_key: str = "", media_type: int = 0) -> Dict[st
     try:
         r = requests.post(
             "https://2.intelx.io/intelligent/search",
-            json={"term": query, "media": media_type, "buckets": [], "timeout": 15, "maxresults": 50},
+            json={
+                "term": query,
+                "media": media_type,
+                "buckets": [],
+                "timeout": 15,
+                "maxresults": 50,
+            },
             headers=headers,
             timeout=20,
         )
@@ -124,4 +135,3 @@ def run_leak_check(query: str, source: str = "auto") -> Dict[str, Any]:
         elif src == "leakcheck":
             out["sources"]["leakcheck"] = leakcheck_search(query, key)
     return out
-

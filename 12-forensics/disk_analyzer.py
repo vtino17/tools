@@ -113,6 +113,7 @@ COMMON_SEARCH_PATTERNS = {
 
 class DiskReader:
     """Pembaca disk/image universal."""
+
     def __init__(self, source, is_device=False):
         self.source = source
         self.is_device = is_device
@@ -184,13 +185,15 @@ def read_mbr(reader):
         return
 
     boot_sig = data[510:512]
-    if boot_sig != b"\x55\xAA":
+    if boot_sig != b"\x55\xaa":
         print(f"[!] Boot signature tidak valid: {boot_sig.hex()} (harus 55AA)")
     else:
         print("[+] Boot signature valid (0x55AA)")
 
     print("\n[*] Partition Table (4 entri):")
-    print(f"    {'#':<3} {'Active':<8} {'Type':>5} {'Type Name':<25} {'Start LBA':>12} {'Sectors':>12} {'Size':>12}")
+    print(
+        f"    {'#':<3} {'Active':<8} {'Type':>5} {'Type Name':<25} {'Start LBA':>12} {'Sectors':>12} {'Size':>12}"
+    )
     print("    " + "-" * 85)
 
     found_partitions = []
@@ -214,17 +217,21 @@ def read_mbr(reader):
         active = "Yes" if boot_flag == 0x80 else "No"
         size_mb = (num_sectors * SECTOR_SIZE) / (1024 * 1024)
 
-        print(f"    {i+1:<3} {active:<8} 0x{part_type:02X}  {type_name:<25} {start_lba:>12} {num_sectors:>12} {size_mb:>9.1f} MB")
+        print(
+            f"    {i+1:<3} {active:<8} 0x{part_type:02X}  {type_name:<25} {start_lba:>12} {num_sectors:>12} {size_mb:>9.1f} MB"
+        )
 
-        found_partitions.append({
-            "index": i + 1,
-            "active": boot_flag == 0x80,
-            "type": part_type,
-            "type_name": type_name,
-            "start_lba": start_lba,
-            "sectors": num_sectors,
-            "size_mb": size_mb,
-        })
+        found_partitions.append(
+            {
+                "index": i + 1,
+                "active": boot_flag == 0x80,
+                "type": part_type,
+                "type_name": type_name,
+                "start_lba": start_lba,
+                "sectors": num_sectors,
+                "size_mb": size_mb,
+            }
+        )
 
     if not found_partitions:
         print("    [*] Tidak ada partisi di MBR (mungkin disk GPT).")
@@ -272,7 +279,9 @@ def read_gpt(reader):
     print(f"[*] Perkiraan ukuran disk: {disk_size_gb:.1f} GB")
 
     print(f"\n[*] GPT Partitions:")
-    print(f"    {'#':<3} {'Type':<45} {'Partition GUID':<38} {'Start LBA':>12} {'End LBA':>12} {'Size':>10}")
+    print(
+        f"    {'#':<3} {'Type':<45} {'Partition GUID':<38} {'Start LBA':>12} {'End LBA':>12} {'Size':>10}"
+    )
     print("    " + "-" * 130)
 
     entry_data = reader.read(part_entry_lba * SECTOR_SIZE, num_entries * entry_size)
@@ -302,8 +311,10 @@ def read_gpt(reader):
             name = ""
 
         display_type = f"{type_name} ({type_guid[:16]}...)" if type_name else type_guid
-        print(f"    {part_num:<3} {display_type:<45} {part_guid:<38} {first_lba:>12} {last_lba:>12} {size_mb:>7.1f} MB"
-              + (f"  [{name}]" if name else ""))
+        print(
+            f"    {part_num:<3} {display_type:<45} {part_guid:<38} {first_lba:>12} {last_lba:>12} {size_mb:>7.1f} MB"
+            + (f"  [{name}]" if name else "")
+        )
 
 
 def str_uuid(data):
@@ -321,11 +332,11 @@ def read_boot_sector(reader, lba):
     print(f"\n[*] Boot Sector hex dump (offset 0x{lba * SECTOR_SIZE:X}):")
     print(hexdump(data, offset=lba * SECTOR_SIZE))
 
-    if data[:3] == b"\xEB\x52\x90" or data[:3] == b"\xEB\x58\x90":
+    if data[:3] == b"\xeb\x52\x90" or data[:3] == b"\xeb\x58\x90":
         print("[+] Signature: NTFS Boot Sector")
-    elif data[:3] == b"\xEB\x3C\x90":
+    elif data[:3] == b"\xeb\x3c\x90":
         print("[+] Signature: FAT Boot Sector (jmp near)")
-    elif data[:3] == b"\xE9\x3C\x90":
+    elif data[:3] == b"\xe9\x3c\x90":
         print("[+] Signature: FAT32 Boot Sector")
     elif data[3:11] == b"NTFS    ":
         print("[+] Signature: NTFS (OEM ID)")
@@ -441,12 +452,17 @@ def recover_files(reader):
                     sector = abs_offset // SECTOR_SIZE
                     if sector not in reported:
                         reported.add(sector)
-                        print(f"    [+] {desc} ({ext}) ditemukan di offset 0x{abs_offset:012X} (LBA {sector})")
+                        print(
+                            f"    [+] {desc} ({ext}) ditemukan di offset 0x{abs_offset:012X} (LBA {sector})"
+                        )
                     pos = idx + 1
 
             progress = min(100, (offset / disk_size) * 100)
-            print(f"\r[*] Progress: {progress:.1f}% ({offset / (1024**2):.0f} MB / {disk_size / (1024**2):.0f} MB)",
-                  end="", flush=True)
+            print(
+                f"\r[*] Progress: {progress:.1f}% ({offset / (1024**2):.0f} MB / {disk_size / (1024**2):.0f} MB)",
+                end="",
+                flush=True,
+            )
             offset += len(chunk)
 
         print()
@@ -489,10 +505,15 @@ def search_pattern(reader, pattern):
                 val = match.group()
                 try:
                     context = chunk[
-                        max(0, match.start() - context_size) :
-                        min(len(chunk), match.end() + context_size)
+                        max(0, match.start() - context_size) : min(
+                            len(chunk), match.end() + context_size
+                        )
                     ]
-                    context_str = context.decode("utf-8", errors="replace").replace("\n", "\\n").replace("\r", "\\r")
+                    context_str = (
+                        context.decode("utf-8", errors="replace")
+                        .replace("\n", "\\n")
+                        .replace("\r", "\\r")
+                    )
                 except Exception:
                     context_str = repr(context)[:100]
 
@@ -528,12 +549,20 @@ Contoh:
         """,
     )
     source_group = parser.add_mutually_exclusive_group(required=True)
-    source_group.add_argument("--device", type=str, help="Device disk fisik (Linux: /dev/sda, Win: PhysicalDrive0)")
-    source_group.add_argument("--image", type=str, help="File image disk (.img, .dd, .e01 raw, .vhd)")
+    source_group.add_argument(
+        "--device", type=str, help="Device disk fisik (Linux: /dev/sda, Win: PhysicalDrive0)"
+    )
+    source_group.add_argument(
+        "--image", type=str, help="File image disk (.img, .dd, .e01 raw, .vhd)"
+    )
 
     parser.add_argument("--sector", type=int, default=0, help="Baca sektor tertentu (default: 0)")
-    parser.add_argument("--recover", action="store_true", help="Mode recovery — cari signature file")
-    parser.add_argument("--search", type=str, help="Cari pattern/regex di disk (atau: email, url, ip, creditcard)")
+    parser.add_argument(
+        "--recover", action="store_true", help="Mode recovery — cari signature file"
+    )
+    parser.add_argument(
+        "--search", type=str, help="Cari pattern/regex di disk (atau: email, url, ip, creditcard)"
+    )
 
     args = parser.parse_args()
 

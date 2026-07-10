@@ -6,6 +6,7 @@ Usage:
   python mac_changer.py -i eth0 -m random
   python mac_changer.py -i eth0 -m 00:11:22:33:44:55
 """
+
 import argparse
 import sys
 import re
@@ -21,6 +22,7 @@ def check_root():
     if os.name == "nt":
         try:
             import ctypes
+
             if ctypes.windll.shell32.IsUserAnAdmin() == 0:
                 print("[!] MAC changing requires Administrator on Windows")
                 return False
@@ -30,8 +32,8 @@ def check_root():
 
 
 def generate_random_mac():
-    mac = [random.randint(0x00, 0xff) for _ in range(6)]
-    mac[0] = (mac[0] & 0xfe) | 0x02
+    mac = [random.randint(0x00, 0xFF) for _ in range(6)]
+    mac[0] = (mac[0] & 0xFE) | 0x02
     parts = []
     for b in mac:
         parts.append("{:02x}".format(b))
@@ -42,7 +44,7 @@ def generate_vendor_mac(vendor_prefix):
     if not re.match(r"^([0-9a-fA-F]{2}[:]){2}[0-9a-fA-F]{2}$", vendor_prefix):
         print("[!] Vendor prefix harus format XX:XX:XX")
         return None
-    suffix = [random.randint(0x00, 0xff) for _ in range(3)]
+    suffix = [random.randint(0x00, 0xFF) for _ in range(3)]
     parts = []
     for b in suffix:
         parts.append("{:02x}".format(b))
@@ -51,8 +53,7 @@ def generate_vendor_mac(vendor_prefix):
 
 def get_current_mac_linux(interface):
     try:
-        result = subprocess.run(["ip", "link", "show", interface],
-                                capture_output=True, text=True)
+        result = subprocess.run(["ip", "link", "show", interface], capture_output=True, text=True)
         match = re.search(r"link/ether\s+([0-9a-f:]{17})", result.stdout)
         if match:
             return match.group(1)
@@ -63,12 +64,17 @@ def get_current_mac_linux(interface):
 
 def change_mac_linux(interface, new_mac):
     try:
-        subprocess.run(["ip", "link", "set", "dev", interface, "down"],
-                       check=True, capture_output=True)
-        subprocess.run(["ip", "link", "set", "dev", interface, "address", new_mac],
-                       check=True, capture_output=True)
-        subprocess.run(["ip", "link", "set", "dev", interface, "up"],
-                       check=True, capture_output=True)
+        subprocess.run(
+            ["ip", "link", "set", "dev", interface, "down"], check=True, capture_output=True
+        )
+        subprocess.run(
+            ["ip", "link", "set", "dev", interface, "address", new_mac],
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["ip", "link", "set", "dev", interface, "up"], check=True, capture_output=True
+        )
         return True
     except subprocess.CalledProcessError as e:
         print("[!] Error: " + str(e))
@@ -78,6 +84,7 @@ def change_mac_linux(interface, new_mac):
 def change_mac_windows(interface, new_mac):
     try:
         import winreg
+
         adapters = get_windows_adapters()
         target_guid = None
         for name, guid in adapters.items():
@@ -99,7 +106,13 @@ def change_mac_windows(interface, new_mac):
                         try:
                             current_guid, _ = winreg.QueryValueEx(subkey, "NetCfgInstanceId")
                             if current_guid == target_guid:
-                                winreg.SetValueEx(subkey, "NetworkAddress", 0, winreg.REG_SZ, new_mac.replace(":", ""))
+                                winreg.SetValueEx(
+                                    subkey,
+                                    "NetworkAddress",
+                                    0,
+                                    winreg.REG_SZ,
+                                    new_mac.replace(":", ""),
+                                )
                                 return True
                         except FileNotFoundError:
                             continue
@@ -113,6 +126,7 @@ def change_mac_windows(interface, new_mac):
 def get_windows_adapters():
     try:
         import winreg
+
         adapters = {}
         ndis_guid = "{4D36E972-E325-11CE-BFC1-08002BE10318}"
         reg_path = r"SYSTEM\CurrentControlSet\Control\Network" + chr(92) + ndis_guid
@@ -136,10 +150,12 @@ def get_windows_adapters():
 
 def restore_mac_linux(interface):
     try:
-        subprocess.run(["ip", "link", "set", "dev", interface, "down"],
-                       check=True, capture_output=True)
-        subprocess.run(["ip", "link", "set", "dev", interface, "up"],
-                       check=True, capture_output=True)
+        subprocess.run(
+            ["ip", "link", "set", "dev", interface, "down"], check=True, capture_output=True
+        )
+        subprocess.run(
+            ["ip", "link", "set", "dev", interface, "up"], check=True, capture_output=True
+        )
         return True
     except:
         return False
@@ -147,8 +163,12 @@ def restore_mac_linux(interface):
 
 def main():
     parser = argparse.ArgumentParser(description="MAC Address Changer")
-    parser.add_argument("-i", "--interface", required=True, help="Network interface (e.g. eth0, wlan0)")
-    parser.add_argument("-m", "--mac", help="New MAC address (use 'random' for random, 'XX:XX:XX' for vendor OUI)")
+    parser.add_argument(
+        "-i", "--interface", required=True, help="Network interface (e.g. eth0, wlan0)"
+    )
+    parser.add_argument(
+        "-m", "--mac", help="New MAC address (use 'random' for random, 'XX:XX:XX' for vendor OUI)"
+    )
     parser.add_argument("-r", "--reset", action="store_true", help="Reset to permanent MAC")
     parser.add_argument("-s", "--show", action="store_true", help="Show current MAC")
     parser.add_argument("-l", "--list", action="store_true", help="List interfaces (Windows)")
@@ -215,4 +235,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

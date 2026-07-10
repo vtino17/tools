@@ -34,11 +34,23 @@ except ImportError:
     sys.exit(1)
 
 STORAGE_PATTERNS = [
-    "{company}", "{company}prod", "{company}dev", "{company}staging",
-    "{company}test", "{company}backup", "{company}data",
-    "{company}files", "{company}blob", "{company}static", "{company}cdn",
-    "{company}media", "{company}logs", "{company}assets",
-    "prod{company}", "dev{company}", "stg{company}",
+    "{company}",
+    "{company}prod",
+    "{company}dev",
+    "{company}staging",
+    "{company}test",
+    "{company}backup",
+    "{company}data",
+    "{company}files",
+    "{company}blob",
+    "{company}static",
+    "{company}cdn",
+    "{company}media",
+    "{company}logs",
+    "{company}assets",
+    "prod{company}",
+    "dev{company}",
+    "stg{company}",
 ]
 
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
@@ -205,7 +217,9 @@ def passive_enum(company, threads=10):
             if i % 20 == 0:
                 print(f"    ... {i}/{len(patterns)} diproses")
 
-    print(f"\n[*] Menemukan {len(found)} storage account ({sum(1 for b in found if b['public'])} publik)")
+    print(
+        f"\n[*] Menemukan {len(found)} storage account ({sum(1 for b in found if b['public'])} publik)"
+    )
     return {"storage_accounts": found}
 
 
@@ -214,10 +228,30 @@ def enumerate_users_by_pattern(token, domain, threads=10):
     print(f"\n[*] Enumerasi user berdasarkan domain: {domain}")
 
     common_names = [
-        "admin", "administrator", "user", "test", "dev", "developer",
-        "info", "contact", "support", "sales", "marketing", "finance",
-        "hr", "it", "security", "help", "service", "office", "mail",
-        "webmaster", "postmaster", "root", "azure", "cloud",
+        "admin",
+        "administrator",
+        "user",
+        "test",
+        "dev",
+        "developer",
+        "info",
+        "contact",
+        "support",
+        "sales",
+        "marketing",
+        "finance",
+        "hr",
+        "it",
+        "security",
+        "help",
+        "service",
+        "office",
+        "mail",
+        "webmaster",
+        "postmaster",
+        "root",
+        "azure",
+        "cloud",
     ]
 
     def check_user(upn):
@@ -266,13 +300,17 @@ Contoh:
         """,
     )
     parser.add_argument("--company", help="Nama perusahaan untuk enumerasi pasif")
-    parser.add_argument("--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)")
+    parser.add_argument(
+        "--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)"
+    )
     parser.add_argument("--tenant-id", help="Azure AD Tenant ID")
     parser.add_argument("--client-id", help="Azure AD Application (client) ID")
     parser.add_argument("--client-secret", help="Azure AD client secret")
     parser.add_argument("--domain", help="Domain untuk user enumeration (contoh: examplecorp.com)")
     parser.add_argument("--all", action="store_true", help="Enumerasi semua resource yang tersedia")
-    parser.add_argument("--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)")
+    parser.add_argument(
+        "--threads", type=int, default=10, help="Jumlah thread konkuren (default: 10)"
+    )
     parser.add_argument("--output", help="Simpan hasil ke file JSON")
     args = parser.parse_args()
 
@@ -299,7 +337,9 @@ Contoh:
         results["service_principals"] = list_service_principals(token)
 
         if args.domain:
-            results["discovered_users"] = enumerate_users_by_pattern(token, args.domain, args.threads)
+            results["discovered_users"] = enumerate_users_by_pattern(
+                token, args.domain, args.threads
+            )
 
     if args.output:
         with open(args.output, "w") as f:

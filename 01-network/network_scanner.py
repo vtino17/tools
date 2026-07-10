@@ -4,6 +4,7 @@ Network Scanner - ARP-based host discovery
 Pemindai jaringan untuk menemukan host aktif dalam subnet.
 Usage: python network_scanner.py -t 192.168.1.0/24
 """
+
 import scapy.all as scapy
 import argparse
 import sys
@@ -58,4 +59,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

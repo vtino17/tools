@@ -32,12 +32,14 @@ class TestLogger(unittest.TestCase):
     def test_import(self):
         """Logger module bisa di-import."""
         from hackerai.logger import setup_logger, get_logger
+
         logger = get_logger("test")
         self.assertEqual(logger.name, "test")
 
     def test_setup_logger_dedup(self):
         """setup_logger dipanggil dua kali tidak double-handler."""
         from hackerai.logger import setup_logger
+
         log1 = setup_logger("test_dedup")
         count1 = len(log1.handlers)
         log2 = setup_logger("test_dedup")

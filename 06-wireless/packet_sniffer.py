@@ -4,6 +4,7 @@ Packet Sniffer - Network packet capture and analysis
 Sniffing paket jaringan dengan filter dan save to PCAP.
 Usage: sudo python packet_sniffer.py -i eth0 -f "tcp port 80" -c 100
 """
+
 import argparse
 import sys
 import os
@@ -18,6 +19,7 @@ def check_root():
     if os.name == "nt":
         try:
             import ctypes
+
             if ctypes.windll.shell32.IsUserAnAdmin() == 0:
                 print("[!] Packet sniffing requires Administrator privileges on Windows")
                 return False
@@ -123,8 +125,7 @@ def sniff_packets(interface, filter_str, count, output, show_payload=False, prot
     print("-" * 70)
 
     try:
-        sniff(iface=interface, prn=handle_packet, filter=filter_str,
-              count=count, store=False)
+        sniff(iface=interface, prn=handle_packet, filter=filter_str, count=count, store=False)
     except KeyboardInterrupt:
         print("\n[!] Stopped by user")
     except Exception as e:
@@ -144,7 +145,9 @@ def main():
     parser = argparse.ArgumentParser(description="Network Packet Sniffer")
     parser.add_argument("-i", "--interface", required=True, help="Network interface")
     parser.add_argument("-f", "--filter", help="BPF filter (e.g. 'tcp port 80')")
-    parser.add_argument("-c", "--count", type=int, default=0, help="Number of packets (0=unlimited)")
+    parser.add_argument(
+        "-c", "--count", type=int, default=0, help="Number of packets (0=unlimited)"
+    )
     parser.add_argument("-o", "--output", help="Save to PCAP file")
     parser.add_argument("-p", "--payload", action="store_true", help="Show payload")
     parser.add_argument("--proto", help="Show only specific protocol")
@@ -158,4 +161,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

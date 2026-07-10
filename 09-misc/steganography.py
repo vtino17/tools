@@ -6,22 +6,23 @@ Usage:
   Hide: python steganography.py hide -i input.png -d secret.txt -o output.png
   Extract: python steganography.py extract -i output.png -o secret_extracted.txt
 """
+
 import argparse
 import sys
 import os
 
 
 def text_to_binary(text):
-    return ''.join(format(ord(c), '08b') for c in text)
+    return "".join(format(ord(c), "08b") for c in text)
 
 
 def binary_to_text(binary):
     chars = []
     for i in range(0, len(binary), 8):
-        byte = binary[i:i+8]
+        byte = binary[i : i + 8]
         if len(byte) == 8:
             chars.append(chr(int(byte, 2)))
-    return ''.join(chars)
+    return "".join(chars)
 
 
 def hide_data_lsb(input_image, data, output_image):
@@ -162,4 +163,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

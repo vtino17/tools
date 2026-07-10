@@ -1,9 +1,9 @@
 """Report generator: TXT, JSON, HTML."""
+
 import json
 import os
 from datetime import datetime
 from typing import Any, Dict
-
 
 HTML_CSS = """
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
@@ -63,6 +63,7 @@ def to_txt(data: Dict[str, Any], title: str = "OSINT Report") -> str:
                     lines.append(f"{pad}[{i}] {v}")
         else:
             lines.append(f"{pad}{obj}")
+
     _walk(data)
     lines.append("")
     lines.append("=" * 70)
@@ -107,12 +108,14 @@ def _render_nested(obj: Any, depth: int = 0) -> str:
         return "".join(parts)
     if isinstance(obj, list):
         if not obj:
-            return '<p><em>(empty)</em></p>'
+            return "<p><em>(empty)</em></p>"
         if all(isinstance(x, (str, int, float, bool)) for x in obj):
             return ", ".join(str(x) for x in obj)
         parts = []
         for i, item in enumerate(obj):
-            parts.append(f'<div class="card"><h3>Item {i + 1}</h3>{_render_nested(item, depth + 1)}</div>')
+            parts.append(
+                f'<div class="card"><h3>Item {i + 1}</h3>{_render_nested(item, depth + 1)}</div>'
+            )
         return "".join(parts)
     return f"<p>{_render_value(obj)}</p>"
 
@@ -139,8 +142,9 @@ def to_html(data: Dict[str, Any], title: str = "OSINT Report") -> str:
 """
 
 
-def save_report(out_dir: str, target: str, data: Dict[str, Any],
-                formats: list = None) -> Dict[str, str]:
+def save_report(
+    out_dir: str, target: str, data: Dict[str, Any], formats: list = None
+) -> Dict[str, str]:
     """Simpan laporan dalam beberapa format. Return dict {format: path}."""
     if formats is None:
         formats = ["txt", "json", "html"]
@@ -165,4 +169,3 @@ def save_report(out_dir: str, target: str, data: Dict[str, Any],
             f.write(to_html(data, f"OSINT Report - {target}"))
         written["html"] = p
     return written
-

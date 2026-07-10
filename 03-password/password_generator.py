@@ -4,6 +4,7 @@ Password Generator & Strength Checker
 Generate strong passwords dan cek kekuatan password.
 Usage: python password_generator.py -l 16 -c 20
 """
+
 import argparse
 import string
 import random
@@ -12,15 +13,54 @@ import sys
 import math
 import hashlib
 
-
 COMMON_PASSWORDS = {
-    "password", "123456", "12345678", "qwerty", "abc123", "monkey", "master",
-    "dragon", "111111", "baseball", "iloveyou", "trustno1", "sunshine",
-    "ashley", "football", "shadow", "batman", "access", "hello", "charlie",
-    "donald", "password1", "qwerty123", "letmein", "welcome", "admin",
-    "admin123", "root", "toor", "pass", "test", "guest", "info", "mysql",
-    "user", "administrator", "oracle", "ftp", "pi", "puppet", "ansible",
-    "ec2-user", "vagrant", "azureuser", "admin@123", "P@ssw0rd", "P@ssword1",
+    "password",
+    "123456",
+    "12345678",
+    "qwerty",
+    "abc123",
+    "monkey",
+    "master",
+    "dragon",
+    "111111",
+    "baseball",
+    "iloveyou",
+    "trustno1",
+    "sunshine",
+    "ashley",
+    "football",
+    "shadow",
+    "batman",
+    "access",
+    "hello",
+    "charlie",
+    "donald",
+    "password1",
+    "qwerty123",
+    "letmein",
+    "welcome",
+    "admin",
+    "admin123",
+    "root",
+    "toor",
+    "pass",
+    "test",
+    "guest",
+    "info",
+    "mysql",
+    "user",
+    "administrator",
+    "oracle",
+    "ftp",
+    "pi",
+    "puppet",
+    "ansible",
+    "ec2-user",
+    "vagrant",
+    "azureuser",
+    "admin@123",
+    "P@ssw0rd",
+    "P@ssword1",
 }
 
 
@@ -94,7 +134,9 @@ def check_strength(password):
         feedback.append("Tambahkan lebih banyak variasi karakter")
 
     # Check for common passwords
-    if password.lower() in COMMON_PASSWORDS or password.lower() in [p.lower() for p in COMMON_PASSWORDS]:
+    if password.lower() in COMMON_PASSWORDS or password.lower() in [
+        p.lower() for p in COMMON_PASSWORDS
+    ]:
         score = 0
         feedback.append("Password ada di daftar password umum (sangat lemah)")
 
@@ -105,7 +147,7 @@ def check_strength(password):
 
     # Check for sequences
     for i in range(len(password) - 2):
-        if ord(password[i]) == ord(password[i+1]) - 1 == ord(password[i+2]) - 2:
+        if ord(password[i]) == ord(password[i + 1]) - 1 == ord(password[i + 2]) - 2:
             score -= 1
             feedback.append("Mengandung sekuens karakter (abc, 123, dll)")
             break
@@ -139,7 +181,9 @@ def check_strength(password):
 def main():
     parser = argparse.ArgumentParser(description="Password Generator & Strength Checker")
     parser.add_argument("-l", "--length", type=int, default=16, help="Password length")
-    parser.add_argument("-c", "--count", type=int, default=1, help="Number of passwords to generate")
+    parser.add_argument(
+        "-c", "--count", type=int, default=1, help="Number of passwords to generate"
+    )
     parser.add_argument("--no-upper", action="store_true")
     parser.add_argument("--no-lower", action="store_true")
     parser.add_argument("--no-digits", action="store_true")
@@ -180,4 +224,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

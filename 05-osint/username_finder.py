@@ -4,12 +4,12 @@ Username Finder - Check username existence across platforms
 Cek keberadaan username di 100+ platform media sosial.
 Usage: python username_finder.py -u username
 """
+
 import requests
 import argparse
 import sys
 import concurrent.futures
 import json
-
 
 PLATFORMS = {
     "GitHub": "https://github.com/{u}",
@@ -111,8 +111,13 @@ PLATFORMS = {
 def check_platform(session, platform, url_template, username, timeout=8):
     url = url_template.format(u=username)
     try:
-        r = session.get(url, timeout=timeout, allow_redirects=True, verify=False,
-                        headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"})
+        r = session.get(
+            url,
+            timeout=timeout,
+            allow_redirects=True,
+            verify=False,
+            headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"},
+        )
         if r.status_code == 200:
             return (platform, url, True)
     except requests.exceptions.RequestException:
@@ -136,8 +141,10 @@ def main():
 
     found = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-        futures = {executor.submit(check_platform, session, p, url, args.username): p
-                   for p, url in PLATFORMS.items()}
+        futures = {
+            executor.submit(check_platform, session, p, url, args.username): p
+            for p, url in PLATFORMS.items()
+        }
         completed = 0
         for future in concurrent.futures.as_completed(futures):
             completed += 1
@@ -157,4 +164,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

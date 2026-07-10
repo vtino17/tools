@@ -4,6 +4,7 @@ Port Scanner - Multi-threaded TCP port scanner
 Pemindai port cepat dengan banner grabbing.
 Usage: python port_scanner.py -t 192.168.1.1 -p 1-1000
 """
+
 import socket
 import argparse
 import threading
@@ -50,12 +51,30 @@ def scan_port(target, port, grab_banner_flag=False):
 
 def get_common_service(port):
     services = {
-        21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 53: "DNS",
-        80: "HTTP", 110: "POP3", 135: "MS-RPC", 139: "NetBIOS",
-        143: "IMAP", 443: "HTTPS", 445: "SMB", 993: "IMAPS",
-        995: "POP3S", 1433: "MSSQL", 1521: "Oracle", 3306: "MySQL",
-        3389: "RDP", 5432: "PostgreSQL", 5900: "VNC", 6379: "Redis",
-        8080: "HTTP-Proxy", 8443: "HTTPS-Alt", 27017: "MongoDB"
+        21: "FTP",
+        22: "SSH",
+        23: "Telnet",
+        25: "SMTP",
+        53: "DNS",
+        80: "HTTP",
+        110: "POP3",
+        135: "MS-RPC",
+        139: "NetBIOS",
+        143: "IMAP",
+        443: "HTTPS",
+        445: "SMB",
+        993: "IMAPS",
+        995: "POP3S",
+        1433: "MSSQL",
+        1521: "Oracle",
+        3306: "MySQL",
+        3389: "RDP",
+        5432: "PostgreSQL",
+        5900: "VNC",
+        6379: "Redis",
+        8080: "HTTP-Proxy",
+        8443: "HTTPS-Alt",
+        27017: "MongoDB",
     }
     return services.get(port, "Unknown")
 
@@ -71,7 +90,9 @@ def worker(target, port_queue, grab_banner_flag, results):
 def main():
     parser = argparse.ArgumentParser(description="Multi-threaded Port Scanner")
     parser.add_argument("-t", "--target", required=True, help="Target host/IP")
-    parser.add_argument("-p", "--ports", default="1-1024", help="Port range (e.g. 1-1000) or single port")
+    parser.add_argument(
+        "-p", "--ports", default="1-1024", help="Port range (e.g. 1-1000) or single port"
+    )
     parser.add_argument("--threads", type=int, default=100, help="Thread count")
     parser.add_argument("-b", "--banner", action="store_true", help="Enable banner grabbing")
     args = parser.parse_args()
@@ -117,4 +138,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

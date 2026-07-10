@@ -4,6 +4,7 @@ WiFi Scanner - Scan wireless networks (Linux only, requires root)
 Menggunakan scapy untuk scan WiFi networks dan client probing.
 Usage: sudo python wifi_scanner.py -i wlan0
 """
+
 import argparse
 import sys
 import time
@@ -11,6 +12,7 @@ import time
 
 def check_root():
     import os
+
     if os.name != "posix" or os.geteuid() != 0:
         print("[!] WiFi scanning requires root privileges on Linux")
         print("[!] Run with: sudo python wifi_scanner.py")
@@ -89,6 +91,7 @@ def main():
         print("[*] Available interfaces:")
         try:
             from scapy.all import get_if_list
+
             for iface in get_if_list():
                 print(f"    {iface}")
         except:
@@ -100,4 +103,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

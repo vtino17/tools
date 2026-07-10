@@ -13,6 +13,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "sqli_tester",
     BASE_DIR / "02-webapp" / "sqli_tester.py",

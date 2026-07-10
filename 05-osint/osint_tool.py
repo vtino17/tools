@@ -4,6 +4,7 @@ OSINT Tool - Multi-source Open Source Intelligence gathering
 Mengumpulkan informasi dari berbagai sumber publik.
 Usage: python osint_tool.py -t target.com
 """
+
 import socket
 import requests
 import argparse
@@ -16,9 +17,11 @@ from urllib.parse import urlparse
 def whois_lookup(domain):
     """Simple whois lookup"""
     try:
-        r = requests.get(f"https://www.whoisxmlapi.com/whoisserver/WhoisService",
-                         params={"domainName": domain, "outputFormat": "JSON"},
-                         timeout=10)
+        r = requests.get(
+            f"https://www.whoisxmlapi.com/whoisserver/WhoisService",
+            params={"domainName": domain, "outputFormat": "JSON"},
+            timeout=10,
+        )
     except:
         pass
     return None
@@ -31,9 +34,9 @@ def dns_records(domain):
     for rtype in record_types:
         try:
             import subprocess
+
             result = subprocess.run(
-                ["nslookup", "-type=" + rtype, domain],
-                capture_output=True, text=True, timeout=10
+                ["nslookup", "-type=" + rtype, domain], capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
                 results[rtype] = result.stdout
@@ -64,7 +67,7 @@ def get_http_headers(url):
 
 def extract_emails(text):
     """Extract email addresses from text"""
-    return list(set(re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text)))
+    return list(set(re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", text)))
 
 
 def extract_links(html):
@@ -75,8 +78,11 @@ def extract_links(html):
 def shodan_search(api_key, query):
     """Search Shodan (requires API key)"""
     try:
-        r = requests.get(f"https://api.shodan.io/shodan/host/search",
-                         params={"key": api_key, "query": query}, timeout=15)
+        r = requests.get(
+            f"https://api.shodan.io/shodan/host/search",
+            params={"key": api_key, "query": query},
+            timeout=15,
+        )
         if r.status_code == 200:
             return r.json()
     except:
@@ -87,8 +93,9 @@ def shodan_search(api_key, query):
 def virustotal_report(api_key, target):
     """Get VirusTotal report"""
     try:
-        r = requests.get(f"https://www.virustotal.com/api/v3/{target}",
-                         headers={"x-apikey": api_key}, timeout=15)
+        r = requests.get(
+            f"https://www.virustotal.com/api/v3/{target}", headers={"x-apikey": api_key}, timeout=15
+        )
         if r.status_code == 200:
             return r.json()
     except:
@@ -99,9 +106,11 @@ def virustotal_report(api_key, target):
 def wayback_lookup(domain):
     """Get historical data from Wayback Machine"""
     try:
-        r = requests.get(f"http://web.archive.org/cdx/search/cdx",
-                         params={"url": domain + "/*", "output": "json", "limit": 20},
-                         timeout=15)
+        r = requests.get(
+            f"http://web.archive.org/cdx/search/cdx",
+            params={"url": domain + "/*", "output": "json", "limit": 20},
+            timeout=15,
+        )
         if r.status_code == 200:
             return r.json()
     except:
@@ -191,4 +200,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

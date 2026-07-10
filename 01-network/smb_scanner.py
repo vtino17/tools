@@ -59,22 +59,108 @@ def detect_smb_version_socket(host: str, timeout: float = 5.0) -> str | None:
         sock = socket.create_connection((host, 445), timeout=timeout)
         sock.settimeout(timeout)
 
-        smb_negotiate = bytes([
-            0x00, 0x00, 0x00, 0x54,
-            0xFF, 0x53, 0x4D, 0x42,
-            0x72, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFE,
-            0x00, 0x00, 0x00, 0x00,
-            0x00, 0x26, 0x02, 0x50, 0x43, 0x20, 0x4E, 0x45,
-            0x54, 0x57, 0x4F, 0x52, 0x4B, 0x20, 0x50, 0x52,
-            0x4F, 0x47, 0x52, 0x41, 0x4D, 0x20, 0x31, 0x2E,
-            0x30, 0x00, 0x02, 0x4D, 0x49, 0x43, 0x52, 0x4F,
-            0x53, 0x4F, 0x46, 0x54, 0x20, 0x4E, 0x45, 0x54,
-            0x57, 0x4F, 0x52, 0x4B, 0x53, 0x20, 0x31, 0x2E,
-            0x30, 0x33, 0x00, 0x02, 0x4C, 0x41, 0x4E, 0x4D,
-            0x41, 0x4E, 0x31, 0x2E, 0x30, 0x00,
-        ])
+        smb_negotiate = bytes(
+            [
+                0x00,
+                0x00,
+                0x00,
+                0x54,
+                0xFF,
+                0x53,
+                0x4D,
+                0x42,
+                0x72,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x01,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0xFF,
+                0xFE,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x26,
+                0x02,
+                0x50,
+                0x43,
+                0x20,
+                0x4E,
+                0x45,
+                0x54,
+                0x57,
+                0x4F,
+                0x52,
+                0x4B,
+                0x20,
+                0x50,
+                0x52,
+                0x4F,
+                0x47,
+                0x52,
+                0x41,
+                0x4D,
+                0x20,
+                0x31,
+                0x2E,
+                0x30,
+                0x00,
+                0x02,
+                0x4D,
+                0x49,
+                0x43,
+                0x52,
+                0x4F,
+                0x53,
+                0x4F,
+                0x46,
+                0x54,
+                0x20,
+                0x4E,
+                0x45,
+                0x54,
+                0x57,
+                0x4F,
+                0x52,
+                0x4B,
+                0x53,
+                0x20,
+                0x31,
+                0x2E,
+                0x30,
+                0x33,
+                0x00,
+                0x02,
+                0x4C,
+                0x41,
+                0x4E,
+                0x4D,
+                0x41,
+                0x4E,
+                0x31,
+                0x2E,
+                0x30,
+                0x00,
+            ]
+        )
 
         sock.send(smb_negotiate)
         data = sock.recv(4096)
@@ -131,8 +217,12 @@ def test_null_session(host: str) -> bool:
             result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
             if "success" in result.stdout.lower() or "berhasil" in result.stdout.lower():
                 log_success(f"Null session BERHASIL pada {host}")
-                subprocess.run(f'net use \\\\{host}\\IPC$ /delete /y', shell=True,
-                               capture_output=True, timeout=5)
+                subprocess.run(
+                    f"net use \\\\{host}\\IPC$ /delete /y",
+                    shell=True,
+                    capture_output=True,
+                    timeout=5,
+                )
                 return True
         except Exception:
             pass
@@ -140,7 +230,9 @@ def test_null_session(host: str) -> bool:
     try:
         result = subprocess.run(
             ["smbclient", "-N", "-L", f"//{host}", "-g"],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True,
+            text=True,
+            timeout=15,
         )
         output = result.stdout + result.stderr
         if "NT_STATUS" not in output and "Error" not in output:
@@ -216,7 +308,9 @@ def check_smb_signing(host: str) -> str:
     try:
         result = subprocess.run(
             ["nmap", "-p", "445", "--script", "smb2-security-mode", "-Pn", host],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         output = result.stdout
         signing = []
@@ -230,7 +324,14 @@ def check_smb_signing(host: str) -> str:
 
 def scan_single_host(host: str, args: argparse.Namespace) -> dict:
     """Pindai satu host SMB dan kembalikan hasilnya."""
-    result = {"host": host, "online": False, "shares": [], "version": None, "null_session": False, "signing": ""}
+    result = {
+        "host": host,
+        "online": False,
+        "shares": [],
+        "version": None,
+        "null_session": False,
+        "signing": "",
+    }
 
     log_info(f"Memindai {host}...")
     result["online"] = check_port(host, 445)
@@ -292,11 +393,18 @@ Contoh:
   %(prog)s --target 192.168.1.10 --no-null
         """,
     )
-    parser.add_argument("--target", "-t", required=True, help="Target IP, hostname, atau subnet (e.g. 192.168.1.0/24)")
+    parser.add_argument(
+        "--target",
+        "-t",
+        required=True,
+        help="Target IP, hostname, atau subnet (e.g. 192.168.1.0/24)",
+    )
     parser.add_argument("--username", "-u", help="Username SMB")
     parser.add_argument("--password", "-p", help="Password SMB")
     parser.add_argument("--no-null", action="store_true", help="Lewati null session test")
-    parser.add_argument("--threads", type=int, default=10, help="Jumlah thread paralel (default: 10)")
+    parser.add_argument(
+        "--threads", type=int, default=10, help="Jumlah thread paralel (default: 10)"
+    )
     parser.add_argument("--timeout", type=float, default=5.0, help="Timeout koneksi (default: 5s)")
     args = parser.parse_args()
 

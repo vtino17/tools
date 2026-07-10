@@ -54,6 +54,7 @@ HASH_ALGORITHMS = ["md5", "sha1", "sha224", "sha256", "sha384", "sha512", "ntlm"
 # OSINT
 OSINT_THREADS = int(os.getenv("HAI_OSINT_THREADS", "20"))
 
+
 # ─── Helpers ─────────────────────────────────────────────────
 def get_default_wordlist(name="common.txt"):
     """Return path to wordlist, fallback ke SecLists path jika ada."""

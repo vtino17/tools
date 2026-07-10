@@ -4,10 +4,10 @@ Banner Grabber - Service identification via banner
 Mengambil banner layanan untuk identifikasi versi.
 Usage: python banner_grabber.py -t 192.168.1.1 -p 80
 """
+
 import socket
 import argparse
 import sys
-
 
 PROBES = {
     21: b"",
@@ -75,4 +75,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

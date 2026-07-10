@@ -4,6 +4,7 @@ Network Discovery - Multi-protocol network discovery
 Mendeteksi host dan layanan di jaringan.
 Usage: python network_discovery.py -t 192.168.1.0/24
 """
+
 import argparse
 import sys
 import socket
@@ -95,7 +96,28 @@ def discover_network(target, threads=50, scan_ports_flag=False, port_range=None)
     print("=" * 60)
 
     if scan_ports_flag and alive:
-        ports = port_range or [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1433, 3306, 3389, 5432, 5900, 8080]
+        ports = port_range or [
+            21,
+            22,
+            23,
+            25,
+            53,
+            80,
+            110,
+            135,
+            139,
+            143,
+            443,
+            445,
+            993,
+            995,
+            1433,
+            3306,
+            3389,
+            5432,
+            5900,
+            8080,
+        ]
         print(f"\n[*] Scanning common ports on {len(alive)} hosts...")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
@@ -108,9 +130,13 @@ def discover_network(target, threads=50, scan_ports_flag=False, port_range=None)
 
 def main():
     parser = argparse.ArgumentParser(description="Network Discovery")
-    parser.add_argument("-t", "--target", required=True, help="Target (e.g. 192.168.1.0/24 or single IP)")
+    parser.add_argument(
+        "-t", "--target", required=True, help="Target (e.g. 192.168.1.0/24 or single IP)"
+    )
     parser.add_argument("--threads", type=int, default=50, help="Thread count")
-    parser.add_argument("--ports", action="store_true", help="Scan common ports on discovered hosts")
+    parser.add_argument(
+        "--ports", action="store_true", help="Scan common ports on discovered hosts"
+    )
     parser.add_argument("-p", "--port-range", help="Comma-separated port list")
     args = parser.parse_args()
 
@@ -123,4 +149,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

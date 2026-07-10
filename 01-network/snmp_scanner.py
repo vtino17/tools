@@ -25,18 +25,42 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
     from pysnmp.hlapi import (
-        SnmpEngine, CommunityData, UdpTransportTarget, ContextData,
-        ObjectType, ObjectIdentity, getCmd, nextCmd, bulkCmd,
+        SnmpEngine,
+        CommunityData,
+        UdpTransportTarget,
+        ContextData,
+        ObjectType,
+        ObjectIdentity,
+        getCmd,
+        nextCmd,
+        bulkCmd,
     )
+
     HAS_PYSNMP = True
 except ImportError:
     HAS_PYSNMP = False
 
 DEFAULT_COMMUNITIES = [
-    "public", "private", "read", "write", "admin",
-    "snmp", "manager", "monitor", "cisco", "ilmi",
-    "security", "default", "secret", "password", "root",
-    "system", "snmpd", "tivoli", "openview", "orig_equip_mfg",
+    "public",
+    "private",
+    "read",
+    "write",
+    "admin",
+    "snmp",
+    "manager",
+    "monitor",
+    "cisco",
+    "ilmi",
+    "security",
+    "default",
+    "secret",
+    "password",
+    "root",
+    "system",
+    "snmpd",
+    "tivoli",
+    "openview",
+    "orig_equip_mfg",
 ]
 
 OID_CATEGORIES = {
@@ -139,12 +163,13 @@ def snmp_walk_pysnmp(target: str, port: int, community: str, oid: str) -> list[t
     """SNMP WALK menggunakan pysnmp bulkCmd."""
     results = []
     try:
-        for (error_indication, error_status, error_index, var_binds) in bulkCmd(
+        for error_indication, error_status, error_index, var_binds in bulkCmd(
             SnmpEngine(),
             CommunityData(community, mpModel=1),
             UdpTransportTarget((target, port), timeout=3, retries=1),
             ContextData(),
-            0, 25,
+            0,
+            25,
             ObjectType(ObjectIdentity(oid)),
             lexicographicMode=False,
         ):
@@ -376,7 +401,9 @@ Contoh:
         results.append(scan_single_host(targets[0], args.port, communities))
     else:
         with ThreadPoolExecutor(max_workers=args.threads) as executor:
-            futures = {executor.submit(scan_single_host, t, args.port, communities): t for t in targets}
+            futures = {
+                executor.submit(scan_single_host, t, args.port, communities): t for t in targets
+            }
             for future in as_completed(futures):
                 results.append(future.result())
 

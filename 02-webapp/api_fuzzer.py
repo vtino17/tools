@@ -37,34 +37,77 @@ except Exception:
 
 COMMON_API_ENDPOINTS = [
     # Generic REST
-    "/api/", "/api/v1/", "/api/v2/", "/api/v3/",
-    "/api/v1/users", "/api/v1/users/1", "/api/v1/users/admin",
-    "/api/v1/me", "/api/v1/profile", "/api/v1/account",
-    "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/token",
-    "/api/v1/admin", "/api/v1/admin/users", "/api/v1/admin/config",
-    "/api/v1/products", "/api/v1/products/1", "/api/v1/items",
-    "/api/v1/orders", "/api/v1/orders/1", "/api/v1/cart",
-    "/api/v1/posts", "/api/v1/posts/1", "/api/v1/comments",
-    "/api/v1/settings", "/api/v1/config", "/api/v1/health",
-    "/api/v1/status", "/api/v1/ping", "/api/v1/version",
-    "/api/v1/files", "/api/v1/uploads", "/api/v1/search",
-    "/api/users", "/api/users/1", "/api/auth", "/api/login",
-    "/api/admin", "/api/config", "/api/health", "/api/status",
-
+    "/api/",
+    "/api/v1/",
+    "/api/v2/",
+    "/api/v3/",
+    "/api/v1/users",
+    "/api/v1/users/1",
+    "/api/v1/users/admin",
+    "/api/v1/me",
+    "/api/v1/profile",
+    "/api/v1/account",
+    "/api/v1/auth/login",
+    "/api/v1/auth/register",
+    "/api/v1/auth/token",
+    "/api/v1/admin",
+    "/api/v1/admin/users",
+    "/api/v1/admin/config",
+    "/api/v1/products",
+    "/api/v1/products/1",
+    "/api/v1/items",
+    "/api/v1/orders",
+    "/api/v1/orders/1",
+    "/api/v1/cart",
+    "/api/v1/posts",
+    "/api/v1/posts/1",
+    "/api/v1/comments",
+    "/api/v1/settings",
+    "/api/v1/config",
+    "/api/v1/health",
+    "/api/v1/status",
+    "/api/v1/ping",
+    "/api/v1/version",
+    "/api/v1/files",
+    "/api/v1/uploads",
+    "/api/v1/search",
+    "/api/users",
+    "/api/users/1",
+    "/api/auth",
+    "/api/login",
+    "/api/admin",
+    "/api/config",
+    "/api/health",
+    "/api/status",
     # Common platform paths
-    "/rest/api/", "/services/rest/", "/webservice/rest/",
-    "/graphql", "/gql", "/query", "/v1/graphql", "/v2/graphql",
-    "/api/graphql", "/api/gql",
-
+    "/rest/api/",
+    "/services/rest/",
+    "/webservice/rest/",
+    "/graphql",
+    "/gql",
+    "/query",
+    "/v1/graphql",
+    "/v2/graphql",
+    "/api/graphql",
+    "/api/gql",
     # Swagger / OpenAPI
-    "/swagger.json", "/swagger.yaml", "/openapi.json", "/openapi.yaml",
-    "/api-docs", "/api-docs.json", "/api/docs", "/docs/api",
-    "/swagger-ui.html", "/swagger/index.html",
-
+    "/swagger.json",
+    "/swagger.yaml",
+    "/openapi.json",
+    "/openapi.yaml",
+    "/api-docs",
+    "/api-docs.json",
+    "/api/docs",
+    "/docs/api",
+    "/swagger-ui.html",
+    "/swagger/index.html",
     # Specific framework paths
     "/.well-known/openid-configuration",
-    "/oauth2/token", "/oauth2/authorize",
-    "/.env", "/debug/vars", "/metrics",
+    "/oauth2/token",
+    "/oauth2/authorize",
+    "/.env",
+    "/debug/vars",
+    "/metrics",
 ]
 
 # ═══════════════════════════════
@@ -138,6 +181,7 @@ GRAPHQL_BATCHING_TEST = [
 # HELPER
 # ═══════════════════════════════
 
+
 def _get_headers(content_type="application/json"):
     return {
         "User-Agent": "Mozilla/5.0 (compatible; APIFuzzer/1.0)",
@@ -157,6 +201,7 @@ def _build_url(base, path):
 # OPENAPI / REST FUZZING
 # ═══════════════════════════════
 
+
 def load_openapi_spec(url_or_path, timeout=10):
     """Coba load OpenAPI spec dari URL atau file lokal."""
     if url_or_path.startswith("http://") or url_or_path.startswith("https://"):
@@ -168,6 +213,7 @@ def load_openapi_spec(url_or_path, timeout=10):
                 except ValueError:
                     try:
                         import yaml
+
                         return yaml.safe_load(resp.text)
                     except Exception:
                         print("[!] Gagal parse OpenAPI spec (JSON/YAML).")
@@ -184,6 +230,7 @@ def load_openapi_spec(url_or_path, timeout=10):
             except ValueError:
                 try:
                     import yaml
+
                     return yaml.safe_load(raw)
                 except Exception:
                     print("[!] Gagal parse OpenAPI spec (JSON/YAML).")
@@ -223,8 +270,9 @@ def fuzz_rest_endpoint(url, method, timeout=10):
 
     try:
         if method in ("POST", "PUT", "PATCH"):
-            resp = requests.request(method, url, headers=headers,
-                                    json={"test": "fuzzer"}, timeout=timeout, verify=False)
+            resp = requests.request(
+                method, url, headers=headers, json={"test": "fuzzer"}, timeout=timeout, verify=False
+            )
         else:
             resp = requests.request(method, url, headers=headers, timeout=timeout, verify=False)
     except RequestException:
@@ -241,26 +289,30 @@ def fuzz_rest_endpoint(url, method, timeout=10):
         sensitive_keys = ["password", "token", "secret", "apikey", "credit_card", "ssn"]
         has_sensitive = any(k in body_lower for k in sensitive_keys)
         if has_sensitive:
-            findings.append({
-                "type": "missing_auth",
-                "severity": "CRITICAL",
-                "endpoint": url,
-                "method": method,
-                "description": f"Endpoint {method} mengembalikan data sensitif TANPA autentikasi",
-                "evidence": "Data sensitif dalam respons 200",
-            })
+            findings.append(
+                {
+                    "type": "missing_auth",
+                    "severity": "CRITICAL",
+                    "endpoint": url,
+                    "method": method,
+                    "description": f"Endpoint {method} mengembalikan data sensitif TANPA autentikasi",
+                    "evidence": "Data sensitif dalam respons 200",
+                }
+            )
         else:
             # Mungkin endpoint tanpa auth, tapi berisi user data
             data_keys = ["user", "users", "data", "result", "id", "name", "email"]
             if any(k in body_lower for k in data_keys):
-                findings.append({
-                    "type": "potential_no_auth",
-                    "severity": "HIGH",
-                    "endpoint": url,
-                    "method": method,
-                    "description": f"Endpoint {method} mungkin dapat diakses tanpa auth",
-                    "evidence": f"Status {status}, data ditemukan",
-                })
+                findings.append(
+                    {
+                        "type": "potential_no_auth",
+                        "severity": "HIGH",
+                        "endpoint": url,
+                        "method": method,
+                        "description": f"Endpoint {method} mungkin dapat diakses tanpa auth",
+                        "evidence": f"Status {status}, data ditemukan",
+                    }
+                )
 
     # Verbose errors
     error_patterns = [
@@ -274,14 +326,16 @@ def fuzz_rest_endpoint(url, method, timeout=10):
     ]
     for pattern, desc in error_patterns:
         if re.search(pattern, body, re.IGNORECASE):
-            findings.append({
-                "type": "verbose_error",
-                "severity": "MEDIUM",
-                "endpoint": url,
-                "method": method,
-                "description": f"Verbose error: {desc}",
-                "evidence": re.search(pattern, body, re.IGNORECASE).group(0)[:100],
-            })
+            findings.append(
+                {
+                    "type": "verbose_error",
+                    "severity": "MEDIUM",
+                    "endpoint": url,
+                    "method": method,
+                    "description": f"Verbose error: {desc}",
+                    "evidence": re.search(pattern, body, re.IGNORECASE).group(0)[:100],
+                }
+            )
 
     # Insecure methods
     if method == "OPTIONS":
@@ -289,28 +343,37 @@ def fuzz_rest_endpoint(url, method, timeout=10):
         dangerous = ["PUT", "DELETE", "TRACE", "CONNECT"]
         for dm in dangerous:
             if dm.upper() in allow.upper():
-                findings.append({
-                    "type": "insecure_method",
-                    "severity": "LOW",
-                    "endpoint": url,
-                    "method": "OPTIONS",
-                    "description": f"Method {dm} diizinkan via OPTIONS",
-                    "evidence": f"Allow: {allow}",
-                })
+                findings.append(
+                    {
+                        "type": "insecure_method",
+                        "severity": "LOW",
+                        "endpoint": url,
+                        "method": "OPTIONS",
+                        "description": f"Method {dm} diizinkan via OPTIONS",
+                        "evidence": f"Allow: {allow}",
+                    }
+                )
 
     # Rate limiting check
-    rl_headers = ["x-ratelimit-limit", "x-rate-limit-limit", "ratelimit-limit",
-                  "x-ratelimit-remaining", "retry-after"]
+    rl_headers = [
+        "x-ratelimit-limit",
+        "x-rate-limit-limit",
+        "ratelimit-limit",
+        "x-ratelimit-remaining",
+        "retry-after",
+    ]
     has_rl = any(h in headers_lower for h in rl_headers)
     if status == 429:
-        findings.append({
-            "type": "rate_limiting",
-            "severity": "INFO",
-            "endpoint": url,
-            "method": method,
-            "description": "Rate limiting terdeteksi (HTTP 429)",
-            "evidence": "Status 429 Too Many Requests",
-        })
+        findings.append(
+            {
+                "type": "rate_limiting",
+                "severity": "INFO",
+                "endpoint": url,
+                "method": method,
+                "description": "Rate limiting terdeteksi (HTTP 429)",
+                "evidence": "Status 429 Too Many Requests",
+            }
+        )
     elif status == 200 and not has_rl:
         pass  # tidak bisa memastikan tanpa rate limiting header
 
@@ -321,25 +384,35 @@ def fuzz_overposting(base_url, timeout=10):
     """Uji overposting / mass assignment pada endpoint."""
     findings = []
     endpoints_to_test = [
-        "/api/v1/users", "/api/v1/users/1", "/api/users", "/api/users/1",
-        "/api/v1/me", "/api/v1/profile", "/api/v1/account",
-        "/api/v1/auth/register", "/api/v1/auth/signup",
+        "/api/v1/users",
+        "/api/v1/users/1",
+        "/api/users",
+        "/api/users/1",
+        "/api/v1/me",
+        "/api/v1/profile",
+        "/api/v1/account",
+        "/api/v1/auth/register",
+        "/api/v1/auth/signup",
     ]
 
     for ep in endpoints_to_test:
         url = _build_url(base_url, ep)
         for payload in OVERPOSTING_PAYLOADS:
             try:
-                resp = requests.post(url, headers=_get_headers(), json=payload, timeout=timeout, verify=False)
+                resp = requests.post(
+                    url, headers=_get_headers(), json=payload, timeout=timeout, verify=False
+                )
                 if resp.status_code in (200, 201):
-                    findings.append({
-                        "type": "overposting",
-                        "severity": "HIGH",
-                        "endpoint": url,
-                        "method": "POST",
-                        "description": f"Endpoint menerima field tidak terduga: {list(payload.keys())}",
-                        "evidence": f"Status {resp.status_code}",
-                    })
+                    findings.append(
+                        {
+                            "type": "overposting",
+                            "severity": "HIGH",
+                            "endpoint": url,
+                            "method": "POST",
+                            "description": f"Endpoint menerima field tidak terduga: {list(payload.keys())}",
+                            "evidence": f"Status {resp.status_code}",
+                        }
+                    )
                     break
             except RequestException:
                 pass
@@ -351,12 +424,17 @@ def fuzz_overposting(base_url, timeout=10):
 # GRAPHQL FUZZING
 # ═══════════════════════════════
 
+
 def graphql_introspection(url, timeout=10):
     """Jalankan GraphQL introspection query."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json={"query": GRAPHQL_INTROSPECTION},
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url,
+            headers=_get_headers(),
+            json={"query": GRAPHQL_INTROSPECTION},
+            timeout=timeout,
+            verify=False,
+        )
         if resp.status_code == 200:
             data = resp.json()
             if "data" in data and data["data"].get("__schema"):
@@ -369,9 +447,13 @@ def graphql_introspection(url, timeout=10):
 def graphql_depth_test(url, timeout=10):
     """Uji apakah GraphQL membatasi query depth."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json={"query": GRAPHQL_DEPTH_TEST},
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url,
+            headers=_get_headers(),
+            json={"query": GRAPHQL_DEPTH_TEST},
+            timeout=timeout,
+            verify=False,
+        )
         if resp.status_code == 200:
             if "error" not in resp.json():
                 return True  # depth tidak dibatasi
@@ -383,9 +465,13 @@ def graphql_depth_test(url, timeout=10):
 def graphql_cost_test(url, timeout=10):
     """Uji query cost/complexity limit."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json={"query": GRAPHQL_COST_TEST},
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url,
+            headers=_get_headers(),
+            json={"query": GRAPHQL_COST_TEST},
+            timeout=timeout,
+            verify=False,
+        )
         if resp.status_code == 200:
             if "error" not in resp.json():
                 return True  # cost tidak dibatasi
@@ -397,9 +483,13 @@ def graphql_cost_test(url, timeout=10):
 def graphql_field_suggestion_test(url, timeout=10):
     """Uji field suggestion (bisa leak schema)."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json={"query": GRAPHQL_FIELD_SUGGESTION_TEST},
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url,
+            headers=_get_headers(),
+            json={"query": GRAPHQL_FIELD_SUGGESTION_TEST},
+            timeout=timeout,
+            verify=False,
+        )
         if resp.status_code == 200:
             data = resp.json()
             if "errors" in data:
@@ -415,9 +505,9 @@ def graphql_field_suggestion_test(url, timeout=10):
 def graphql_batching_test(url, timeout=10):
     """Uji apakah GraphQL menerima batched queries."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json=GRAPHQL_BATCHING_TEST,
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url, headers=_get_headers(), json=GRAPHQL_BATCHING_TEST, timeout=timeout, verify=False
+        )
         if resp.status_code == 200:
             data = resp.json()
             if isinstance(data, list) and len(data) == 3:
@@ -430,12 +520,22 @@ def graphql_batching_test(url, timeout=10):
 def graphql_debug_mode(url, timeout=10):
     """Cek apakah GraphQL mengembalikan debug/trace info."""
     try:
-        resp = requests.post(url, headers=_get_headers(),
-                             json={"query": "{ __typenam }"},
-                             timeout=timeout, verify=False)
+        resp = requests.post(
+            url,
+            headers=_get_headers(),
+            json={"query": "{ __typenam }"},
+            timeout=timeout,
+            verify=False,
+        )
         body = resp.text.lower()
-        debug_indicators = ["stacktrace", "traceback", "exception", "debug",
-                            "extensions", "locations"]
+        debug_indicators = [
+            "stacktrace",
+            "traceback",
+            "exception",
+            "debug",
+            "extensions",
+            "locations",
+        ]
         for di in debug_indicators:
             if di in body:
                 return True, di
@@ -447,6 +547,7 @@ def graphql_debug_mode(url, timeout=10):
 # ═══════════════════════════════
 # MAIN
 # ═══════════════════════════════
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -460,7 +561,9 @@ Contoh:
   python api_fuzzer.py -u https://api.target.com --graphql --threads 5
         """,
     )
-    parser.add_argument("-u", "--url", required=True, help="URL target API base (contoh: https://api.target.com)")
+    parser.add_argument(
+        "-u", "--url", required=True, help="URL target API base (contoh: https://api.target.com)"
+    )
     parser.add_argument("--spec", help="Path atau URL ke OpenAPI/Swagger spec (JSON/YAML)")
     parser.add_argument("--graphql", action="store_true", help="Aktifkan fuzzing GraphQL")
     parser.add_argument("-t", "--threads", type=int, default=5, help="Thread paralel (default: 5)")
@@ -509,8 +612,10 @@ Contoh:
 
     tested = 0
     with ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = {executor.submit(fuzz_rest_endpoint, ep, method, timeout): (ep, method)
-                   for ep, method in endpoints}
+        futures = {
+            executor.submit(fuzz_rest_endpoint, ep, method, timeout): (ep, method)
+            for ep, method in endpoints
+        }
         for future in as_completed(futures):
             tested += 1
             result = future.result()
@@ -518,7 +623,11 @@ Contoh:
                 all_findings.extend(result)
                 for f in result:
                     sev = f["severity"]
-                    icon = "[!]" if sev in ("CRITICAL", "HIGH") else "[+]" if sev == "MEDIUM" else "[*]"
+                    icon = (
+                        "[!]"
+                        if sev in ("CRITICAL", "HIGH")
+                        else "[+]" if sev == "MEDIUM" else "[*]"
+                    )
                     print(f"{icon} [{sev}] {f['method']:6} {f['endpoint'][:80]}")
                     print(f"      {f['description']}")
                     if f.get("evidence"):
@@ -555,14 +664,16 @@ Contoh:
             if mutation_type:
                 print(f"    Mutation type: {mutation_type.get('name', '?')}")
             print(f"    Total types: {types_count}")
-            all_findings.append({
-                "type": "graphql_introspection",
-                "severity": "CRITICAL",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": f"GraphQL introspection terbuka ({types_count} types)",
-                "evidence": f"Query type: {query_type}",
-            })
+            all_findings.append(
+                {
+                    "type": "graphql_introspection",
+                    "severity": "CRITICAL",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": f"GraphQL introspection terbuka ({types_count} types)",
+                    "evidence": f"Query type: {query_type}",
+                }
+            )
         else:
             print("[-] Introspection tidak aktif atau diblokir.")
 
@@ -572,14 +683,16 @@ Contoh:
         if depth_result:
             print("[!] [HIGH] GraphQL tidak membatasi query depth!")
             print("    Attacker bisa melakukan deeply nested query DoS.")
-            all_findings.append({
-                "type": "graphql_depth",
-                "severity": "HIGH",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": "Query depth TIDAK dibatasi (depth 10 diterima)",
-                "evidence": "Deeply nested query berhasil",
-            })
+            all_findings.append(
+                {
+                    "type": "graphql_depth",
+                    "severity": "HIGH",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": "Query depth TIDAK dibatasi (depth 10 diterima)",
+                    "evidence": "Deeply nested query berhasil",
+                }
+            )
         elif depth_result is False:
             print("[+] Query depth limit diterapkan (aman).")
 
@@ -588,14 +701,16 @@ Contoh:
         cost_result = graphql_cost_test(gql_url, timeout)
         if cost_result:
             print("[!] [HIGH] GraphQL tidak membatasi query cost!")
-            all_findings.append({
-                "type": "graphql_cost",
-                "severity": "HIGH",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": "Query cost/complexity TIDAK dibatasi",
-                "evidence": "Multi-fragment aliased query berhasil",
-            })
+            all_findings.append(
+                {
+                    "type": "graphql_cost",
+                    "severity": "HIGH",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": "Query cost/complexity TIDAK dibatasi",
+                    "evidence": "Multi-fragment aliased query berhasil",
+                }
+            )
         elif cost_result is False:
             print("[+] Query cost limit diterapkan (aman).")
 
@@ -604,14 +719,16 @@ Contoh:
         suggest_result, suggest_msg = graphql_field_suggestion_test(gql_url, timeout)
         if suggest_result:
             print(f"[+] [MEDIUM] Field suggestion AKTIF: {suggest_msg}")
-            all_findings.append({
-                "type": "graphql_suggestion",
-                "severity": "MEDIUM",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": "Field suggestions dapat membantu enumerasi schema",
-                "evidence": suggest_msg,
-            })
+            all_findings.append(
+                {
+                    "type": "graphql_suggestion",
+                    "severity": "MEDIUM",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": "Field suggestions dapat membantu enumerasi schema",
+                    "evidence": suggest_msg,
+                }
+            )
         else:
             print("[-] Field suggestion tidak aktif.")
 
@@ -619,15 +736,19 @@ Contoh:
         print("\n[*] Menguji query batching...")
         batch_result = graphql_batching_test(gql_url, timeout)
         if batch_result:
-            print("[+] [MEDIUM] GraphQL menerima batched queries (mungkin abuse untuk brute force).")
-            all_findings.append({
-                "type": "graphql_batching",
-                "severity": "MEDIUM",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": "Query batching diizinkan",
-                "evidence": "3 batched queries berhasil",
-            })
+            print(
+                "[+] [MEDIUM] GraphQL menerima batched queries (mungkin abuse untuk brute force)."
+            )
+            all_findings.append(
+                {
+                    "type": "graphql_batching",
+                    "severity": "MEDIUM",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": "Query batching diizinkan",
+                    "evidence": "3 batched queries berhasil",
+                }
+            )
         else:
             print("[-] Batching tidak diizinkan.")
 
@@ -636,14 +757,16 @@ Contoh:
         debug_result, debug_info = graphql_debug_mode(gql_url, timeout)
         if debug_result:
             print(f"[!] [HIGH] GraphQL debug mode AKTIF! ({debug_info})")
-            all_findings.append({
-                "type": "graphql_debug",
-                "severity": "HIGH",
-                "endpoint": gql_url,
-                "method": "POST",
-                "description": f"GraphQL mengembalikan debug info",
-                "evidence": f"Trace mengandung '{debug_info}'",
-            })
+            all_findings.append(
+                {
+                    "type": "graphql_debug",
+                    "severity": "HIGH",
+                    "endpoint": gql_url,
+                    "method": "POST",
+                    "description": f"GraphQL mengembalikan debug info",
+                    "evidence": f"Trace mengandung '{debug_info}'",
+                }
+            )
         else:
             print("[-] Tidak ada debug info yang bocor.")
 

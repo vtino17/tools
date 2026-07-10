@@ -1,4 +1,5 @@
 """Metadata extractor: EXIF image, PDF, DOCX, file hash."""
+
 import hashlib
 import json
 import os
@@ -56,7 +57,9 @@ def exif_image(path: str) -> Dict[str, Any]:
                 for k, v in gps.items():
                     name = GPSTAGS.get(k, k)
                     try:
-                        gps_clean[str(name)] = str(v) if not isinstance(v, (list, tuple)) else [float(x) for x in v]
+                        gps_clean[str(name)] = (
+                            str(v) if not isinstance(v, (list, tuple)) else [float(x) for x in v]
+                        )
                     except Exception:
                         gps_clean[str(name)] = "<unreadable>"
                 out["gps"] = gps_clean
@@ -84,15 +87,24 @@ def pdf_metadata(path: str) -> Dict[str, Any]:
         out["size_bytes"] = len(data)
         out["hashes"] = file_hashes(path)
         # Cari string /Info
-        for marker in (b"/Author", b"/Creator", b"/Producer", b"/Title", b"/Subject", b"/Keywords", b"/CreationDate", b"/ModDate"):
+        for marker in (
+            b"/Author",
+            b"/Creator",
+            b"/Producer",
+            b"/Title",
+            b"/Subject",
+            b"/Keywords",
+            b"/CreationDate",
+            b"/ModDate",
+        ):
             idx = data.find(marker)
             if idx != -1:
-                chunk = data[idx:idx + 200]
+                chunk = data[idx : idx + 200]
                 end = chunk.find(b"(")
                 if end != -1:
                     end2 = chunk.find(b")", end)
                     if end2 != -1:
-                        val = chunk[end + 1:end2].decode("latin-1", errors="ignore")
+                        val = chunk[end + 1 : end2].decode("latin-1", errors="ignore")
                         out[marker.decode()[1:].lower()] = val.strip()
         return out
     except Exception as e:
@@ -125,7 +137,11 @@ def extract_metadata(path: str) -> Dict[str, Any]:
     if not os.path.exists(path):
         return {"file": path, "error": "file tidak ditemukan"}
     ext = os.path.splitext(path)[1].lower()
-    out: Dict[str, Any] = {"file": path, "size_bytes": os.path.getsize(path), "hashes": file_hashes(path)}
+    out: Dict[str, Any] = {
+        "file": path,
+        "size_bytes": os.path.getsize(path),
+        "hashes": file_hashes(path),
+    }
     if ext in (".jpg", ".jpeg", ".png", ".tiff", ".tif", ".webp", ".heic"):
         out.update(exif_image(path))
     elif ext == ".pdf":
@@ -135,4 +151,3 @@ def extract_metadata(path: str) -> Dict[str, Any]:
     else:
         out["note"] = "Tipe file tidak dikenali. Hanya extract hash."
     return out
-

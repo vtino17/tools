@@ -1,4 +1,5 @@
 """Breach check via HaveIBeenPwned API (resmi & legal)."""
+
 import hashlib
 import sys
 from typing import Any, Dict, List
@@ -49,7 +50,11 @@ def check_email_breaches(email: str, api_key: str = "") -> Dict[str, Any]:
         elif r.status_code == 404:
             return {"email": email, "breached": False, "count": 0, "breaches": []}
         elif r.status_code == 429:
-            return {"email": email, "error": "rate_limited", "note": "Tambahkan API key HIBP di config."}
+            return {
+                "email": email,
+                "error": "rate_limited",
+                "note": "Tambahkan API key HIBP di config.",
+            }
         else:
             return {"email": email, "error": f"http_{r.status_code}", "body": r.text[:200]}
     except Exception as e:
@@ -84,8 +89,9 @@ def check_password_breach(password: str) -> Dict[str, Any]:
     sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
     prefix, suffix = sha1[:5], sha1[5:]
     try:
-        r = requests.get(f"{HIBP_PWD_RANGE}/{prefix}", timeout=15,
-                         headers={"User-Agent": random_ua()})
+        r = requests.get(
+            f"{HIBP_PWD_RANGE}/{prefix}", timeout=15, headers={"User-Agent": random_ua()}
+        )
         if r.status_code != 200:
             return {"error": f"http_{r.status_code}"}
         for line in r.text.splitlines():
@@ -107,4 +113,3 @@ def run_breach_check(email: str = "", password: str = "") -> Dict[str, Any]:
     if password:
         out["password_check"] = check_password_breach(password)
     return out
-

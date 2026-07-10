@@ -11,6 +11,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "password_generator",
     BASE_DIR / "03-password" / "password_generator.py",
@@ -54,7 +55,10 @@ class TestPasswordGenerator(unittest.TestCase):
     def test_generate_no_upper(self):
         """use_upper=False, password tanpa huruf besar."""
         pw = generate_password(16, False, True, True, True, False)
-        self.assertTrue(not any(c.isupper() for c in pw) or all(c.islower() or c.isdigit() or not c.isalpha() for c in pw))
+        self.assertTrue(
+            not any(c.isupper() for c in pw)
+            or all(c.islower() or c.isdigit() or not c.isalpha() for c in pw)
+        )
 
     def test_strength_weak(self):
         """'1234' harus 'SANGAT LEMAH' atau 'LEMAH'."""

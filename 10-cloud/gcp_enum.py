@@ -37,17 +37,31 @@ GOOGLE_API_AVAILABLE = False
 try:
     from googleapiclient import discovery
     from google.oauth2 import service_account
+
     GOOGLE_API_AVAILABLE = True
 except ImportError:
     pass
 
 GCS_PATTERNS = [
-    "{company}", "{company}-prod", "{company}-dev", "{company}-staging",
-    "{company}-test", "{company}-backup", "{company}-data",
-    "{company}-assets", "{company}-static", "{company}-media",
-    "{company}-logs", "{company}-files", "{company}-images",
-    "{company}-terraform", "{company}-config", "{company}-build",
-    "prod-{company}", "dev-{company}", "staging-{company}",
+    "{company}",
+    "{company}-prod",
+    "{company}-dev",
+    "{company}-staging",
+    "{company}-test",
+    "{company}-backup",
+    "{company}-data",
+    "{company}-assets",
+    "{company}-static",
+    "{company}-media",
+    "{company}-logs",
+    "{company}-files",
+    "{company}-images",
+    "{company}-terraform",
+    "{company}-config",
+    "{company}-build",
+    "prod-{company}",
+    "dev-{company}",
+    "staging-{company}",
 ]
 
 GCP_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -73,6 +87,7 @@ def get_access_token(key_path):
     import jwt
 
     from datetime import datetime, timedelta, timezone
+
     try:
         import jwt
     except ImportError:
@@ -216,7 +231,9 @@ def list_compute_instances(token, project_id, zone="us-central1-a"):
     """List Compute Engine VM instances."""
     print(f"\n[*] Enumerasi Compute Engine untuk project: {project_id}")
     try:
-        url = f"https://compute.googleapis.com/compute/v1/projects/{project_id}/aggregated/instances"
+        url = (
+            f"https://compute.googleapis.com/compute/v1/projects/{project_id}/aggregated/instances"
+        )
         headers = {"Authorization": f"Bearer {token}"}
         resp = requests.get(url, headers=headers, timeout=30)
         if resp.status_code == 200:
@@ -259,10 +276,11 @@ def list_gcs_buckets(token, project_id):
                 name = b.get("name", "?")
                 location = b.get("location", "?")
                 try:
-                    pub_resp = requests.get(
-                        f"{GCS_BASE}/{name}", timeout=5, allow_redirects=False
+                    pub_resp = requests.get(f"{GCS_BASE}/{name}", timeout=5, allow_redirects=False)
+                    public = (
+                        pub_resp.status_code in (200, 403)
+                        and "<ListBucketResult" in pub_resp.text[:200]
                     )
-                    public = pub_resp.status_code in (200, 403) and "<ListBucketResult" in pub_resp.text[:200]
                 except Exception:
                     public = False
                 pfx = "[!]" if public else "[*]"
@@ -361,7 +379,9 @@ Contoh:
         """,
     )
     parser.add_argument("--company", help="Nama perusahaan untuk enumerasi pasif")
-    parser.add_argument("--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)")
+    parser.add_argument(
+        "--passive", action="store_true", help="Mode enumerasi pasif (tanpa kredensial)"
+    )
     parser.add_argument("--service-account-key", help="Path ke file JSON service account key GCP")
     parser.add_argument("--org-id", help="GCP Organization ID")
     parser.add_argument("--all", action="store_true", help="Enumerasi semua resource")

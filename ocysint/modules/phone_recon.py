@@ -1,4 +1,5 @@
 """Phone number reconnaissance: format, negara, carrier, Numverify API."""
+
 import re
 from typing import Any, Dict, Optional
 
@@ -9,14 +10,36 @@ from core.utils import normalize_phone, random_ua
 
 # Mapping digit prefix kasar (bukan sumber resmi, untuk info umum saja)
 PREFIX_HINTS = {
-    "1": "US/Canada", "44": "UK", "62": "Indonesia", "60": "Malaysia",
-    "65": "Singapore", "91": "India", "86": "China", "81": "Japan",
-    "82": "Korea", "61": "Australia", "49": "Germany", "33": "France",
-    "39": "Italy", "34": "Spain", "55": "Brazil", "52": "Mexico",
-    "7": "Russia/Kazakhstan", "90": "Turkey", "966": "Saudi Arabia",
-    "971": "UAE", "20": "Egypt", "27": "South Africa", "234": "Nigeria",
-    "63": "Philippines", "66": "Thailand", "84": "Vietnam", "92": "Pakistan",
-    "880": "Bangladesh", "94": "Sri Lanka", "977": "Nepal",
+    "1": "US/Canada",
+    "44": "UK",
+    "62": "Indonesia",
+    "60": "Malaysia",
+    "65": "Singapore",
+    "91": "India",
+    "86": "China",
+    "81": "Japan",
+    "82": "Korea",
+    "61": "Australia",
+    "49": "Germany",
+    "33": "France",
+    "39": "Italy",
+    "34": "Spain",
+    "55": "Brazil",
+    "52": "Mexico",
+    "7": "Russia/Kazakhstan",
+    "90": "Turkey",
+    "966": "Saudi Arabia",
+    "971": "UAE",
+    "20": "Egypt",
+    "27": "South Africa",
+    "234": "Nigeria",
+    "63": "Philippines",
+    "66": "Thailand",
+    "84": "Vietnam",
+    "92": "Pakistan",
+    "880": "Bangladesh",
+    "94": "Sri Lanka",
+    "977": "Nepal",
 }
 
 INMARSAT_RE = re.compile(r"^(\+?\d{1,3})(\d+)$")
@@ -70,7 +93,7 @@ def numverify_lookup(phone: str, api_key: str) -> Dict[str, Any]:
             "carrier": data.get("carrier"),
             "line_type": data.get("line_type"),
             "is_voip": any(k in (data.get("carrier", "") or "").lower() for k in VOIP_KEYWORDS)
-                     or (data.get("line_type") or "").lower() == "voip",
+            or (data.get("line_type") or "").lower() == "voip",
         }
     except Exception as e:
         return {"source": "numverify", "error": str(e)}
@@ -82,4 +105,3 @@ def run_phone_recon(phone: str) -> Dict[str, Any]:
     nv = numverify_lookup(info["normalized"], api_key or "")
     info["numverify"] = nv
     return info
-

@@ -50,6 +50,7 @@ def unix_sock_request(path, method="GET", body=None):
             def connect(self):
                 self.sock = sock.sock(sock.AF_UNIX, sock.SOCK_STREAM)
                 self.sock.connect(self._kwargs["socket_path"])
+
     except ImportError:
         pass
 
@@ -162,7 +163,9 @@ def enum_containers(base_url):
         containers = unix_sock_request("/containers/json?all=true")
     else:
         try:
-            resp = requests.get(f"{base_url}/v1.43/containers/json?all=true", timeout=10, verify=False)
+            resp = requests.get(
+                f"{base_url}/v1.43/containers/json?all=true", timeout=10, verify=False
+            )
             containers = resp.json() if resp.status_code == 200 else None
         except Exception:
             containers = None
@@ -173,7 +176,9 @@ def enum_containers(base_url):
 
     running = [c for c in containers if c.get("State") == "running"]
     stopped = [c for c in containers if c.get("State") != "running"]
-    print(f"[+] Total containers: {len(containers)} (running={len(running)}, stopped={len(stopped)})\n")
+    print(
+        f"[+] Total containers: {len(containers)} (running={len(running)}, stopped={len(stopped)})\n"
+    )
 
     risks = []
     for c in containers:
@@ -192,9 +197,7 @@ def enum_containers(base_url):
                 mounts = host_config.get("Mounts", [])
                 cap_add = host_config.get("CapAdd", [])
 
-                has_docker_sock = any(
-                    "/var/run/docker.sock" in m.get("Source", "") for m in mounts
-                )
+                has_docker_sock = any("/var/run/docker.sock" in m.get("Source", "") for m in mounts)
                 host_net = net_mode == "host"
                 host_pid = pid_mode == "host"
 
@@ -402,8 +405,11 @@ Contoh:
         if args.deep and base_url.startswith("unix://"):
             print("\n--- Analisis Keamanan Mendalam ---")
             sens_files = [
-                "/etc/shadow", "/etc/passwd", "/root/.ssh/id_rsa",
-                "/proc/1/cgroup", "/proc/1/mountinfo",
+                "/etc/shadow",
+                "/etc/passwd",
+                "/root/.ssh/id_rsa",
+                "/proc/1/cgroup",
+                "/proc/1/mountinfo",
             ]
             print("[*] Memeriksa akses file sensitif dari container...")
             for fpath in sens_files:

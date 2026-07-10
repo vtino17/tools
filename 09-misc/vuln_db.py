@@ -4,10 +4,10 @@ Vulnerability Database Lookup - Local CVE/CWE database
 Database lokal untuk lookup vulnerability.
 Usage: python vuln_db.py -s Apache -v 2.4.49
 """
+
 import argparse
 import sys
 import json
-
 
 LOCAL_VULN_DB = {
     "Apache 2.4.49": {
@@ -160,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

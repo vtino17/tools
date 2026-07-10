@@ -12,6 +12,7 @@ BASE_DIR = TEST_DIR.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "port_scanner",
     BASE_DIR / "01-network" / "port_scanner.py",

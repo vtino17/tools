@@ -4,11 +4,11 @@ Hash Cracker - Multi-algorithm hash cracking
 Mendukung MD5, SHA1, SHA256, SHA512, NTLM.
 Usage: python hash_cracker.py -H 5f4dcc3b5aa765d61d8327deb882cf99 -t md5 -w wordlist.txt
 """
+
 import hashlib
 import argparse
 import sys
 import binascii
-
 
 SUPPORTED_HASHES = ["md5", "sha1", "sha224", "sha256", "sha384", "sha512", "ntlm"]
 
@@ -119,4 +119,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
