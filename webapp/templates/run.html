@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ tool.name }} - HackerAI Tools</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+body { background:#0d1117; color:#c9d1d9; font-family:'Courier New',monospace; margin:0; padding:0 }
+.header { background:#161b22; border-bottom:2px solid #2ea043; padding:16px 30px; display:flex; align-items:center; gap:15px }
+.header h1 { color:#2ea043; font-size:20px; margin:0; text-shadow:0 0 10px rgba(46,160,67,0.4) }
+.header .breadcrumb { color:#8b949e; font-size:13px }
+.header .breadcrumb a { color:#2ea043; text-decoration:none }
+.header .breadcrumb a:hover { text-decoration:underline }
+.container { max-width:1000px; margin:0 auto; padding:25px 30px }
+.tool-meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px }
+.tool-meta .tag { font-size:11px; padding:3px 10px; border-radius:12px }
+.tag-category { background:rgba(46,160,67,0.15); color:#2ea043; border:1px solid rgba(46,160,67,0.3) }
+.tag-id { background:rgba(139,148,158,0.1); color:#8b949e; border:1px solid rgba(139,148,158,0.2) }
+.tag-root { background:rgba(218,54,51,0.2); color:#da3633; border:1px solid rgba(218,54,51,0.3) }
+.tag-safe { background:rgba(46,160,67,0.15); color:#2ea043; border:1px solid rgba(46,160,67,0.2) }
+.tool-name { color:#c9d1d9; font-size:26px; font-weight:bold; margin-bottom:8px }
+.tool-desc { color:#8b949e; font-size:14px; margin-bottom:24px }
+.section-title { color:#c9d1d9; font-size:14px; font-weight:bold; margin-bottom:12px; border-bottom:1px solid #21262d; padding-bottom:8px }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px }
+@media(max-width:600px) { .form-grid { grid-template-columns:1fr } }
+.form-group { display:flex; flex-direction:column }
+.form-group label { font-size:11px; color:#8b949e; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px }
+.form-group input { padding:10px 12px; background:#161b22; border:1px solid #30363d; border-radius:5px; color:#c9d1d9; font-size:13px; font-family:inherit; outline:none }
+.form-group input:focus { border-color:#2ea043; box-shadow:0 0 0 2px rgba(46,160,67,0.15) }
+.button-row { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap }
+.btn { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer; border:none; font-family:inherit; transition:all 0.15s }
+.btn-run { background:#2ea043; color:#0d1117 }
+.btn-run:hover { background:#3fb950 }
+.btn-run:disabled { opacity:0.5; cursor:not-allowed }
+.btn-stop { background:#da3633; color:#fff }
+.btn-stop:hover { background:#f85149 }
+.btn-back { background:#21262d; color:#c9d1d9; border:1px solid #30363d }
+.btn-back:hover { background:#30363d }
+.terminal { background:#0d1117; border:1px solid #21262d; border-radius:8px; overflow:hidden; margin-top:16px }
+.terminal-header { background:#161b22; padding:10px 16px; display:flex; align-items:center; gap:8px; border-bottom:1px solid #21262d }
+.terminal-dot { width:10px; height:10px; border-radius:50% }
+.terminal-dot.red { background:#da3633 }
+.terminal-dot.yellow { background:#d2991d }
+.terminal-dot.green { background:#2ea043 }
+.terminal-title { color:#8b949e; font-size:11px; margin-left:8px; flex:1 }
+.terminal-status { font-size:11px; color:#8b949e }
+.terminal-body { padding:16px; min-height:300px; max-height:500px; overflow-y:auto; font-size:13px; line-height:1.5; white-space:pre-wrap; word-break:break-all }
+.stdout { color:#2ea043 }
+.stderr { color:#da3633 }
+.meta-line { color:#8b949e; font-style:italic }
+.status-bar { margin-top:12px; padding:10px 16px; background:#161b22; border-radius:6px; font-size:12px; color:#8b949e; display:flex; align-items:center; gap:8px; border:1px solid #21262d }
+.status-indicator { width:8px; height:8px; border-radius:50%; background:#484f58; display:inline-block }
+.status-indicator.running { background:#d2991d; animation:pulse 1s infinite }
+.status-indicator.done { background:#2ea043 }
+.status-indicator.error { background:#da3633 }
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&gt;_ HackerAI</h1>
+  <span class="breadcrumb">
+    <a href="/">Home</a> / {{ tool.name }}
+  </span>
+</div>
+
+<div class="container">
+  <div class="tool-meta">
+    <span class="tag tag-id">#{{ tool.id }}</span>
+    <span class="tag tag-category">{{ category }}</span>
+    {% if tool.needs_root %}
+    <span class="tag tag-root">needs root</span>
+    {% else %}
+    <span class="tag tag-safe">user level</span>
+    {% endif %}
+  </div>
+  <div class="tool-name">{{ tool.name }}</div>
+  <div class="tool-desc">{{ tool.desc }}</div>
+
+  <div class="section-title">Arguments</div>
+  <div class="form-grid" id="argsForm">
+    {% for arg in tool.args %}
+    <div class="form-group">
+      <label for="{{ arg }}">{{ arg }}</label>
+      <input type="text" id="{{ arg }}" name="{{ arg }}" placeholder="{{ arg }}">
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="button-row">
+    <button class="btn btn-run" id="runBtn" onclick="runTool()">Run</button>
+    <button class="btn btn-stop" id="stopBtn" onclick="stopTool()">Stop</button>
+    <a class="btn btn-back" href="/">Back to Home</a>
+  </div>
+
+  <div class="status-bar">
+    <span class="status-indicator" id="statusIndicator"></span>
+    <span id="statusText">Ready</span>
+    <span style="margin-left:auto" id="execTime"></span>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="terminal-dot red"></span>
+      <span class="terminal-dot yellow"></span>
+      <span class="terminal-dot green"></span>
+      <span class="terminal-title">output &mdash; {{ tool.name }}</span>
+      <span class="terminal-status" id="termStatus"></span>
+    </div>
+    <pre class="terminal-body" id="terminalOutput">Waiting for execution...
+<span class="meta-line">Fill arguments and click Run to execute {{ tool.name }}</span></pre>
+  </div>
+</div>
+
+<script>
+let abortController = null;
+const startTime = null;
+const STATUS = document.getElementById('statusIndicator');
+const STATUS_TEXT = document.getElementById('statusText');
+const TERM_STATUS = document.getElementById('termStatus');
+const OUTPUT = document.getElementById('terminalOutput');
+const EXEC_TIME = document.getElementById('execTime');
+const RUN_BTN = document.getElementById('runBtn');
+
+function setStatus(state, text) {
+  STATUS.className = 'status-indicator ' + state;
+  STATUS_TEXT.textContent = text;
+}
+
+async function runTool() {
+  if (abortController) return;
+  const args = {};
+  const inputs = document.querySelectorAll('#argsForm input');
+  inputs.forEach(inp => {
+    if (inp.value.trim()) args[inp.name] = inp.value.trim();
+  });
+  const toolId = "{{ tool.id }}";
+  abortController = new AbortController();
+  const startTs = Date.now();
+  RUN_BTN.disabled = true;
+  setStatus('running', 'Running...');
+  TERM_STATUS.textContent = 'executing';
+  OUTPUT.innerHTML = '';
+  EXEC_TIME.textContent = '';
+  appendOutput('meta', '[+] Executing {{ tool.name }} #{{ tool.id }}\n');
+  appendOutput('meta', '[+] Category: {{ category }}\n');
+  appendOutput('meta', '[+] Arguments: ' + JSON.stringify(args) + '\n\n');
+  try {
+    const resp = await fetch('/api/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tool_id: toolId, args: args}),
+      signal: abortController.signal
+    });
+    const data = await resp.json();
+    const elapsed = ((Date.now() - startTs) / 1000).toFixed(2);
+    EXEC_TIME.textContent = elapsed + 's';
+    if (data.stdout) {
+      data.stdout.split('\n').forEach(line => {
+        if (line.trim()) appendOutput('stdout', line + '\n');
+      });
+    }
+    if (data.stderr) {
+      appendOutput('stderr', '\n[STDERR]\n');
+      data.stderr.split('\n').forEach(line => {
+        if (line.trim()) appendOutput('stderr', line + '\n');
+      });
+    }
+    if (data.exit_code === 0) {
+      appendOutput('meta', '\n[+] Exit code: 0 (success)\n');
+      setStatus('done', 'Completed');
+      TERM_STATUS.textContent = 'exit 0';
+    } else {
+      appendOutput('stderr', '\n[-] Exit code: ' + data.exit_code + '\n');
+      setStatus('error', 'Error (code ' + data.exit_code + ')');
+      TERM_STATUS.textContent = 'exit ' + data.exit_code;
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      appendOutput('meta', '\n[!] Execution stopped by user\n');
+      setStatus('done', 'Stopped');
+      TERM_STATUS.textContent = 'aborted';
+    } else {
+      appendOutput('stderr', '\n[-] Error: ' + err.message + '\n');
+      setStatus('error', 'Error');
+      TERM_STATUS.textContent = 'error';
+    }
+  }
+  abortController = null;
+  RUN_BTN.disabled = false;
+}
+
+function stopTool() {
+  if (abortController) {
+    abortController.abort();
+    abortController = null;
+    appendOutput('meta', '\n[!] Stopping...\n');
+    setStatus('done', 'Stopping...');
+  }
+}
+
+function appendOutput(type, text) {
+  const span = document.createElement('span');
+  span.className = type;
+  span.textContent = text;
+  OUTPUT.appendChild(span);
+  OUTPUT.scrollTop = OUTPUT.scrollHeight;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# HackerAI Tools - Required Python Packages
+# Install with: pip install -r requirements.txt
+
+# Core networking
+requests>=2.28.0
+scapy>=2.5.0
+paramiko>=3.0.0
+
+# DNS
+dnspython>=2.4.0
+
+# Web scraping
+beautifulsoup4>=4.11.0
+
+# Image manipulation
+Pillow>=9.0.0
+
+# Keyboard input
+pynput>=1.7.0
+
+# Terminal styling
+colorama>=0.4.6
+
+# Cryptography (built into Python 3.6+)
+# hashlib - built-in
+# ssl - built-in
+# socket - built-in

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackerAI Tools Dashboard</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+body { background:#0d1117; color:#c9d1d9; font-family:'Courier New',monospace; margin:0; padding:0 }
+.header { background:#161b22; border-bottom:2px solid #2ea043; padding:20px 30px; display:flex; align-items:center; gap:15px }
+.header h1 { color:#2ea043; font-size:24px; margin:0; text-shadow:0 0 10px rgba(46,160,67,0.4) }
+.header .badge { background:#2ea043; color:#0d1117; padding:4px 12px; border-radius:4px; font-weight:bold; font-size:14px }
+.container { max-width:1400px; margin:0 auto; padding:20px 30px }
+.search-bar { margin-bottom:25px }
+.search-bar input { width:100%; max-width:600px; padding:12px 16px; background:#161b22; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:14px; outline:none; font-family:inherit }
+.search-bar input:focus { border-color:#2ea043; box-shadow:0 0 0 3px rgba(46,160,67,0.15) }
+.category-section { margin-bottom:20px; border:1px solid #21262d; border-radius:8px; overflow:hidden }
+.category-header { background:#161b22; padding:14px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none }
+.category-header:hover { background:#1c2128 }
+.category-header h2 { margin:0; font-size:16px; color:#2ea043; font-family:inherit }
+.category-header .count { background:#21262d; color:#8b949e; padding:2px 10px; border-radius:12px; font-size:12px }
+.category-header .arrow { color:#8b949e; font-size:14px; transition:transform 0.2s }
+.category-header.collapsed .arrow { transform:rotate(-90deg) }
+.tool-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; padding:16px 20px; background:#0d1117 }
+.tool-grid.collapsed { display:none }
+.tool-card { background:#161b22; border:1px solid #21262d; border-radius:6px; padding:16px; cursor:pointer; transition:all 0.2s; text-decoration:none; color:inherit; display:block }
+.tool-card:hover { border-color:#2ea043; transform:translateY(-1px); box-shadow:0 4px 12px rgba(46,160,67,0.15) }
+.tool-card .tool-number { color:#2ea043; font-size:12px; font-weight:bold; margin-bottom:4px; opacity:0.8 }
+.tool-card .tool-name { font-size:15px; font-weight:bold; color:#c9d1d9; margin-bottom:6px }
+.tool-card .tool-desc { font-size:12px; color:#8b949e; line-height:1.4 }
+.tool-card .tag-row { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap }
+.tag { font-size:10px; padding:2px 8px; border-radius:10px }
+.tag-root { background:rgba(218,54,51,0.2); color:#da3633; border:1px solid rgba(218,54,51,0.3) }
+.tag-safe { background:rgba(46,160,67,0.15); color:#2ea043; border:1px solid rgba(46,160,67,0.2) }
+.no-results { text-align:center; padding:60px 20px; color:#8b949e }
+.no-results h3 { font-size:18px; color:#c9d1d9 }
+.footer { text-align:center; padding:20px; color:#484f58; font-size:11px; border-top:1px solid #21262d; margin-top:30px }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&gt;_ HackerAI Tools</h1>
+  <span class="badge" id="totalCount"></span>
+</div>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search tools by name..." oninput="filterTools()">
+  </div>
+
+  <div id="toolContainer"></div>
+</div>
+
+<div class="footer">
+  HackerAI Tools Dashboard v1.0 &mdash; For authorized security testing only
+</div>
+
+<script>
+const TOOLS = {{ tools | tojson }};
+let totalCount = 0;
+
+function renderTools(filterText) {
+  filterText = (filterText || '').toLowerCase();
+  const container = document.getElementById('toolContainer');
+  let html = '';
+  totalCount = 0;
+  let anyVisible = false;
+
+  for (const [category, tools] of Object.entries(TOOLS)) {
+    const filtered = tools.filter(t => t.name.toLowerCase().includes(filterText));
+    if (filtered.length === 0) continue;
+    anyVisible = true;
+    totalCount += filtered.length;
+    const catId = category.replace(/[^a-zA-Z0-9]/g, '_');
+    html += '<div class="category-section">';
+    html += '<div class="category-header" onclick="toggleCategory(this)">';
+    html += '<h2>' + category + '</h2>';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    html += '<span class="count">' + filtered.length + ' tools</span>';
+    html += '<span class="arrow">&#9660;</span>';
+    html += '</div></div>';
+    html += '<div class="tool-grid">';
+    for (const tool of filtered) {
+      html += '<a class="tool-card" href="/run/' + tool.id + '">';
+      html += '<div class="tool-number">#' + tool.id + '</div>';
+      html += '<div class="tool-name">' + tool.name + '</div>';
+      html += '<div class="tool-desc">' + tool.desc + '</div>';
+      html += '<div class="tag-row">';
+      html += tool.needs_root
+        ? '<span class="tag tag-root">root</span>'
+        : '<span class="tag tag-safe">user</span>';
+      html += '</div></a>';
+    }
+    html += '</div></div>';
+  }
+
+  if (!anyVisible) {
+    html = '<div class="no-results"><h3>No tools found</h3><p>Try a different search term</p></div>';
+  }
+  container.innerHTML = html;
+  document.getElementById('totalCount').textContent = totalCount + ' tools';
+}
+
+function toggleCategory(header) {
+  header.classList.toggle('collapsed');
+  header.nextElementSibling.classList.toggle('collapsed');
+}
+
+function filterTools() {
+  renderTools(document.getElementById('searchInput').value);
+}
+
+renderTools('');
+</script>
+</body>
+</html>
