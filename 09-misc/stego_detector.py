@@ -475,9 +475,9 @@ Examples:
 
     all_findings = []
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [1] LSB Analysis")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     lsb_results = analyze_lsb(args.file, fmt)
     all_findings.extend(lsb_results)
     for f in lsb_results:
@@ -490,9 +490,9 @@ Examples:
             if f.get("flag"):
                 print(f"  [!] {f['flag']}")
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [2] Chi-Square Test on LSB")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     chi_result = chi_square_test(args.file, fmt)
     if chi_result:
         all_findings.append(chi_result)
@@ -500,9 +500,9 @@ Examples:
         print(f"  Avg chi-square   : {chi_result['avg_chi_square']}")
         print(f"  Verdict          : {chi_result['verdict']}")
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [3] Histogram Analysis")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     hist_result = analyze_histogram(args.file, fmt)
     if hist_result:
         all_findings.append(hist_result)
@@ -513,9 +513,9 @@ Examples:
                 f"    Channel {s['channel']} value {s['value']} ({s['count']} pixels, {s['ratio']}x avg)"
             )
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [4] EOF Marker Detection")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     eof_results = scan_eof(args.file, fmt)
     all_findings.extend(eof_results)
     for f in eof_results:
@@ -527,9 +527,9 @@ Examples:
             else:
                 print(f"  No hidden payloads detected after image EOF")
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [5] Metadata Check")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     meta_results = check_metadata(args.file)
     all_findings.extend(meta_results)
     for f in meta_results:
@@ -543,9 +543,9 @@ Examples:
         elif f["type"] == "png_text":
             print(f"  [!] Large PNG text chunk: {f['key']} ({f['length']} chars)")
 
-    print(f"\n{'─' * 70}")
+    print(f"\n{'-' * 70}")
     print("  [6] String Extraction")
-    print(f"{'─' * 70}")
+    print(f"{'-' * 70}")
     str_results = extract_strings(args.file)
     all_findings.append(str_results)
     print(f"  ASCII strings     : {str_results['total_ascii_strings']}")
@@ -556,14 +556,14 @@ Examples:
     else:
         print(f"  No suspicious strings found")
 
-    print(f"\n{'═' * 70}")
+    print(f"\n{'=' * 70}")
     label, confidence, evidence = verdict(all_findings)
     print(f"  VERDICT: {label}")
     print(f"  CONFIDENCE: {confidence}%")
     print(f"  EVIDENCE:")
     for e in evidence:
         print(f"    - {e}")
-    print(f"{'═' * 70}\n")
+    print(f"{'=' * 70}\n")
 
 
 if __name__ == "__main__":

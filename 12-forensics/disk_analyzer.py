@@ -19,10 +19,10 @@ from datetime import datetime
 OS_NAME = platform.system()
 
 BANNER = """
-╔══════════════════════════════════════════════╗
-║        DISK ANALYZER TOOL v1.0               ║
-║   Analisis Forensik Disk & Filesystem        ║
-╚══════════════════════════════════════════════╝
++==============================================+
+|        DISK ANALYZER TOOL v1.0               |
+|   Analisis Forensik Disk & Filesystem        |
++==============================================+
 """
 
 SECTOR_SIZE = 512

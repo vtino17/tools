@@ -28,9 +28,9 @@ try:
 except Exception:
     pass
 
-# ═══════════════════════════════
+# ===============================
 # PLUGIN WORDLIST (50+ common)
-# ═══════════════════════════════
+# ===============================
 
 COMMON_PLUGINS = [
     "akismet",
@@ -88,9 +88,9 @@ COMMON_PLUGINS = [
     "simple-history",
 ]
 
-# ═══════════════════════════════
+# ===============================
 # HEADERS
-# ═══════════════════════════════
+# ===============================
 
 
 def _get_headers():
@@ -107,9 +107,9 @@ def _get_json_headers():
     return h
 
 
-# ═══════════════════════════════
+# ===============================
 # DETECT WORDPRESS
-# ═══════════════════════════════
+# ===============================
 
 
 def detect_wordpress(url, timeout=10):
@@ -199,9 +199,9 @@ def detect_wordpress(url, timeout=10):
     return info
 
 
-# ═══════════════════════════════
+# ===============================
 # ENUMERATION
-# ═══════════════════════════════
+# ===============================
 
 
 def enumerate_users_via_rest(base_url, timeout=10):
@@ -355,9 +355,9 @@ def enumerate_themes(base_url, timeout=10):
     return themes
 
 
-# ═══════════════════════════════
+# ===============================
 # MISCONFIGURATION CHECKS
-# ═══════════════════════════════
+# ===============================
 
 
 def check_misconfigs(base_url, timeout=10):
@@ -517,9 +517,9 @@ def check_misconfigs(base_url, timeout=10):
     return findings
 
 
-# ═══════════════════════════════
+# ===============================
 # MAIN
-# ═══════════════════════════════
+# ===============================
 
 
 def main():
@@ -555,16 +555,16 @@ Contoh:
     enum_opts = set(args.enumerate.lower().split(","))
 
     print(r"""
-╦ ╦╔═╗  ╔═╗╔═╗╔═╗╔╗╔╔╗╔╔═╗╦═╗
-║║║╠═╝  ╚═╗║  ╠═╣║║║║║║║╣ ╠╦╝
-╚╩╝╩    ╚═╝╚═╝╩ ╩╝╚╝╝╚╝╚═╝╩╚═  v1.0
++ ++=+  +=++=++=++++++++=++=+
+|||+=+  +=+|  +=+|||||||+ +++
+++++    +=++=++ ++++++++=+++=  v1.0
 """)
 
     print(f"\n[*] Target: {base_url}")
     print(f"[*] Enumerasi: {', '.join(sorted(enum_opts))}")
     print(f"[*] Threads: {threads}")
 
-    # ═══════ DETECTION
+    # ======= DETECTION
     print("\n[1] DETEKSI WORDPRESS\n" + "-" * 40)
     wp_info = detect_wordpress(base_url, timeout)
 
@@ -579,7 +579,7 @@ Contoh:
             print("[*] Versi tidak terdeteksi")
         print(f"[+] Detection sources: {', '.join(wp_info['sources']) or 'wp-content pattern'}")
 
-    # ═══════ MISCONFIGURATIONS
+    # ======= MISCONFIGURATIONS
     print("\n[2] MISCONFIGURATION CHECK\n" + "-" * 40)
     findings = check_misconfigs(base_url, timeout)
     if findings:
@@ -593,7 +593,7 @@ Contoh:
     else:
         print("[-] Tidak ada misconfigurasi yang terdeteksi.")
 
-    # ═══════ USER ENUMERATION
+    # ======= USER ENUMERATION
     if "u" in enum_opts:
         print("\n[3] USER ENUMERATION\n" + "-" * 40)
         users_rest = enumerate_users_via_rest(base_url, timeout)
@@ -615,7 +615,7 @@ Contoh:
         else:
             print("[-] Tidak dapat enumerasi user (mungkin REST API dibatasi).")
 
-    # ═══════ PLUGIN ENUMERATION
+    # ======= PLUGIN ENUMERATION
     if "p" in enum_opts:
         print("\n[4] PLUGIN ENUMERATION\n" + "-" * 40)
         plugins = enumerate_plugins(base_url, threads, timeout)
@@ -628,7 +628,7 @@ Contoh:
         else:
             print("[-] Tidak ada plugin umum yang terdeteksi.")
 
-    # ═══════ THEME ENUMERATION
+    # ======= THEME ENUMERATION
     if "t" in enum_opts:
         print("\n[5] THEME ENUMERATION\n" + "-" * 40)
         themes = enumerate_themes(base_url, timeout)
@@ -641,7 +641,7 @@ Contoh:
         else:
             print("[-] Tidak dapat mendeteksi tema.")
 
-    # ═══════ SUMMARY
+    # ======= SUMMARY
     print("\n" + "=" * 60)
     print("  RINGKASAN")
     print("=" * 60)

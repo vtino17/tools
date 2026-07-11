@@ -20,10 +20,10 @@ from datetime import datetime
 OS_NAME = platform.system()
 
 BANNER = """
-╔══════════════════════════════════════════════╗
-║         MEMORY DUMP TOOL v1.0                ║
-║    Akuisisi & Analisis Memori Forensik       ║
-╚══════════════════════════════════════════════╝
++==============================================+
+|         MEMORY DUMP TOOL v1.0                |
+|    Akuisisi & Analisis Memori Forensik       |
++==============================================+
 """
 
 

@@ -31,9 +31,9 @@ try:
 except Exception:
     pass
 
-# ═══════════════════════════════
+# ===============================
 # COMMON API ENDPOINTS WORDLIST
-# ═══════════════════════════════
+# ===============================
 
 COMMON_API_ENDPOINTS = [
     # Generic REST
@@ -110,15 +110,15 @@ COMMON_API_ENDPOINTS = [
     "/metrics",
 ]
 
-# ═══════════════════════════════
+# ===============================
 # HTTP METHODS TO TEST
-# ═══════════════════════════════
+# ===============================
 
 HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
 
-# ═══════════════════════════════
+# ===============================
 # OVERPOSTING TEST BODIES
-# ═══════════════════════════════
+# ===============================
 
 OVERPOSTING_PAYLOADS = [
     {"role": "admin", "isAdmin": True, "is_admin": True},
@@ -128,9 +128,9 @@ OVERPOSTING_PAYLOADS = [
     {"plan": "enterprise", "tier": "unlimited", "subscription": "lifetime"},
 ]
 
-# ═══════════════════════════════
+# ===============================
 # GRAPHQL INTROSPECTION QUERY
-# ═══════════════════════════════
+# ===============================
 
 GRAPHQL_INTROSPECTION = """
 query IntrospectionQuery {
@@ -177,9 +177,9 @@ GRAPHQL_BATCHING_TEST = [
 ]
 
 
-# ═══════════════════════════════
+# ===============================
 # HELPER
-# ═══════════════════════════════
+# ===============================
 
 
 def _get_headers(content_type="application/json"):
@@ -197,9 +197,9 @@ def _build_url(base, path):
     return f"{base}/{path}"
 
 
-# ═══════════════════════════════
+# ===============================
 # OPENAPI / REST FUZZING
-# ═══════════════════════════════
+# ===============================
 
 
 def load_openapi_spec(url_or_path, timeout=10):
@@ -420,9 +420,9 @@ def fuzz_overposting(base_url, timeout=10):
     return findings
 
 
-# ═══════════════════════════════
+# ===============================
 # GRAPHQL FUZZING
-# ═══════════════════════════════
+# ===============================
 
 
 def graphql_introspection(url, timeout=10):
@@ -544,9 +544,9 @@ def graphql_debug_mode(url, timeout=10):
         return None, None
 
 
-# ═══════════════════════════════
+# ===============================
 # MAIN
-# ═══════════════════════════════
+# ===============================
 
 
 def main():
@@ -576,9 +576,9 @@ Contoh:
     threads = min(args.threads, 20)
 
     print(r"""
-╔═╗╔═╗╦  ╔═╗╦ ╦╔═╗╔═╗╔═╗╦═╗
-╠═╣╠═╝║  ╠╣ ║ ║╔═╝║╣ ║╣ ╠╦╝
-╩ ╩╩  ╩  ╚  ╚═╝╩  ╚═╝╚═╝╩╚═  v1.0
++=++=++  +=++ ++=++=++=++=+
++=++=+|  ++ | |+=+|+ |+ +++
++ ++  +  +  +=++  +=++=+++=  v1.0
 """)
 
     print(f"\n[*] Target: {base_url}")
@@ -586,7 +586,7 @@ Contoh:
 
     all_findings = []
 
-    # ═══════ OPENAPI SPEC
+    # ======= OPENAPI SPEC
     endpoints = []
     if args.spec:
         print(f"\n[*] Memuat OpenAPI spec: {args.spec}")
@@ -607,7 +607,7 @@ Contoh:
         endpoints = expanded
         print(f"[+] {len(endpoints)} endpoint dari wordlist untuk fuzzing")
 
-    # ═══════ REST FUZZING
+    # ======= REST FUZZING
     print(f"\n[1] REST API FUZZING ({len(endpoints)} requests)\n" + "=" * 60)
 
     tested = 0
@@ -635,7 +635,7 @@ Contoh:
             if tested % 50 == 0:
                 print(f"[*] Progress: {tested}/{len(endpoints)} diuji...")
 
-    # ═══════ OVERPOSTING
+    # ======= OVERPOSTING
     if not args.no_overposting:
         print(f"\n[2] OVERPOSTING TEST\n" + "=" * 60)
         overpost_findings = fuzz_overposting(base_url, timeout)
@@ -646,7 +646,7 @@ Contoh:
         else:
             print("[-] Tidak ada celah overposting yang terdeteksi.")
 
-    # ═══════ GRAPHQL
+    # ======= GRAPHQL
     if args.graphql:
         print(f"\n[3] GRAPHQL FUZZING\n" + "=" * 60)
         gql_url = base_url if "/graphql" in base_url else _build_url(base_url, "/graphql")
@@ -770,7 +770,7 @@ Contoh:
         else:
             print("[-] Tidak ada debug info yang bocor.")
 
-    # ═══════ SUMMARY
+    # ======= SUMMARY
     print(f"\n{'=' * 60}")
     print(f"  RINGKASAN TEMUAN")
     print(f"{'=' * 60}")

@@ -1,14 +1,27 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 HackerAI Tools - Master Launcher
 Menu interaktif untuk menjalankan seluruh tools hacking yang tersedia.
 Usage: python hackerai.py  or  python hackerai.py --list
 """
 
+import io
 import os
 import sys
 import subprocess
 import importlib
+
+# Fix Windows cp1252 console — force UTF-8 for stdout/stderr
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except AttributeError:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    try:
+        sys.stderr.reconfigure(encoding="utf-8")
+    except AttributeError:
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -565,7 +578,7 @@ CONSENT_FILE = os.path.join(BASE_DIR, ".consent_accepted")
 
 DISCLAIMER = """\
 ======================================================================
-  ⚠️  PERINGATAN - BACA DENGAN SEKSAMA SEBELUM MELANJUTKAN
+  [!] PERINGATAN - BACA DENGAN SEKSAMA SEBELUM MELANJUTKAN
 ======================================================================
 
 Alat ini HANYA boleh digunakan untuk:
@@ -599,7 +612,7 @@ def show_disclaimer():
             print("\n[!] Dibatalkan.")
             sys.exit(0)
         if answer == "SETUJU":
-            print(C.GREEN + "[✔] Anda telah menyetujui ketentuan penggunaan.\n" + S.RESET_ALL)
+            print(C.GREEN + "[OK] Anda telah menyetujui ketentuan penggunaan.\n" + S.RESET_ALL)
             return True
         else:
             print(C.RED + "[!] Anda harus mengetik 'SETUJU' untuk melanjutukan.\n" + S.RESET_ALL)
@@ -647,7 +660,7 @@ def list_tools():
         print(C.YELLOW + f"\n  [{cat}] {CATEGORY_NAMES.get(cat, cat)}" + S.RESET_ALL)
         for tid, t in cat_tools:
             root = C.RED + " [ROOT]" + S.RESET_ALL if t.get("needs_root") else ""
-            dang = C.RED + " [⚠]" + S.RESET_ALL if t.get("dangerous") else ""
+            dang = C.RED + " [!]" + S.RESET_ALL if t.get("dangerous") else ""
             print(f"   {tid:>3}. {t['name']}{root}{dang}")
 
 
@@ -674,7 +687,7 @@ def show_category_menu(category):
     print("-" * 60)
     for tid, t in cat_tools:
         root = C.RED + " [ROOT]" + S.RESET_ALL if t.get("needs_root") else ""
-        dang = C.RED + " ⚠" + S.RESET_ALL if t.get("dangerous") else ""
+        dang = C.RED + " [!]" + S.RESET_ALL if t.get("dangerous") else ""
         missing = check_deps(t)
         dep_warn = C.YELLOW + f" [missing: {','.join(missing)}]" + S.RESET_ALL if missing else ""
         print(f"  {C.GREEN}{tid:>3}{S.RESET_ALL}. {t['name']}{root}{dang}{dep_warn}")
@@ -703,7 +716,7 @@ def run_tool(tool_id):
     if tool.get("dangerous"):
         print()
         print(C.RED + "!" * 60)
-        print(f"  ⚠️  DANGER: {tool['name']}")
+        print(f"  [!] DANGER: {tool['name']}")
         print("!" * 60)
         print("  Tool ini dapat menyebabkan kerusakan pada sistem target!")
         print("  HANYA gunakan pada sistem yang ANDA miliki.")
@@ -757,12 +770,12 @@ def check_all_deps():
                 importlib.import_module("pynput")
             else:
                 importlib.import_module(dep)
-            print(C.GREEN + f"  [✔] {dep} - OK" + S.RESET_ALL)
+            print(C.GREEN + f"  [v] {dep} - OK" + S.RESET_ALL)
         except ImportError:
-            print(C.RED + f"  [✘] {dep} - MISSING (pip install {dep})" + S.RESET_ALL)
+            print(C.RED + f"  [x] {dep} - MISSING (pip install {dep})" + S.RESET_ALL)
             all_ok = False
     if all_ok:
-        print(C.GREEN + "\n[✔] Semua dependencies terinstall!" + S.RESET_ALL)
+        print(C.GREEN + "\n[v] Semua dependencies terinstall!" + S.RESET_ALL)
     else:
         print(
             C.YELLOW

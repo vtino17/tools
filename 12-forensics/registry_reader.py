@@ -16,10 +16,10 @@ import sys
 from datetime import datetime, timezone
 
 BANNER = """
-╔══════════════════════════════════════════════╗
-║      REGISTRY READER TOOL v1.0               ║
-║   Pembaca Forensik Windows Registry Hive     ║
-╚══════════════════════════════════════════════╝
++==============================================+
+|      REGISTRY READER TOOL v1.0               |
+|   Pembaca Forensik Windows Registry Hive     |
++==============================================+
 """
 
 REG_SZ = 1
