@@ -1,0 +1,22 @@
+name: Feature request
+description: Propose a focused product improvement
+title: "feature: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the daily workflow problem, not only a proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Safety and compatibility risks

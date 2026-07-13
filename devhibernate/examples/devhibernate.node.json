@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "project": "node-monorepo",
+  "defaultBase": "main",
+  "proxyPort": 7777,
+  "setup": ["npm ci"],
+  "passEnv": ["DATABASE_URL"],
+  "services": [{
+    "name": "web",
+    "command": "npm run dev:web",
+    "portEnv": "PORT",
+    "expose": true,
+    "health": {"type": "http", "path": "/", "timeoutSeconds": 30}
+  }],
+  "deleteBranchOnDelete": false
+}
