@@ -1,0 +1,42 @@
+name: devhibernate-ci
+
+on:
+  push:
+    paths:
+      - 'devhibernate/**'
+      - '.github/workflows/devhibernate-ci.yml'
+  pull_request:
+    paths:
+      - 'devhibernate/**'
+      - '.github/workflows/devhibernate-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: devhibernate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - run: make verify
+
+  windows-build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: devhibernate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - run: go build ./cmd/devhibernate
