@@ -654,7 +654,7 @@ def check_deps(tool):
 
 
 def list_tools():
-    print(C.CYAN + "\n  HACKERAI TOOLS - Full List (84 tools, 13 categories)\n" + S.RESET_ALL)
+    print(C.CYAN + "\n  HACKERAI TOOLS - Full List (85+ tools, 13 categories)\n" + S.RESET_ALL)
     for cat in sorted(CATEGORY_MENU_KEYS):
         cat_tools = [(tid, t) for tid, t in TOOLS.items() if t["category"] == cat]
         print(C.YELLOW + f"\n  [{cat}] {CATEGORY_NAMES.get(cat, cat)}" + S.RESET_ALL)
@@ -668,7 +668,7 @@ def show_main_menu():
     print()
     print(C.CYAN + "=" * 65)
     print("  HACKERAI TOOLS - MASTER LAUNCHER v2.0")
-    print("  84 tools · 13 categories")
+    print("  85+ tools · 13 categories")
     print("=" * 65 + S.RESET_ALL)
     for i, cat in enumerate(CATEGORY_MENU_KEYS, 1):
         count = sum(1 for t in TOOLS.values() if t["category"] == cat)

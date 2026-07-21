@@ -1,0 +1,32 @@
+name: Bug Report
+description: Report a tool malfunction or error
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: tool
+    attributes:
+      label: Tool
+      description: Which tool has the issue?
+      placeholder: e.g. port_scanner.py
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened vs what should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `python 01-network/port_scanner.py -t 127.0.0.1`
+        2. See error...
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: Windows 11 / Ubuntu 24.04 / macOS
