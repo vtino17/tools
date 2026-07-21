@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "project": "go-service",
+  "defaultBase": "main",
+  "proxyPort": 7777,
+  "setup": ["go mod download"],
+  "services": [{
+    "name": "api",
+    "command": "go run ./cmd/server",
+    "portEnv": "PORT",
+    "expose": true,
+    "health": {"type": "http", "path": "/health", "timeoutSeconds": 20}
+  }],
+  "deleteBranchOnDelete": false
+}
