@@ -1,51 +1,73 @@
-"""
-Test: Config & Logger (hackerai package)
-"""
-
-import sys
-import unittest
-import tempfile
+import os
 from pathlib import Path
+import subprocess
+import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import pytest
 
-from hackerai.config import env_info, get_default_wordlist
-
-
-class TestConfig(unittest.TestCase):
-    """Test centralized config module."""
-
-    def test_env_info_default(self):
-        """env_info() tanpa env vars harus return 'default'."""
-        info = env_info()
-        self.assertIsInstance(info, str)
-
-    def test_get_default_wordlist_not_exists(self):
-        """get_default_wordlist() untuk file yang tidak ada return path."""
-        path = get_default_wordlist("nonexistent.txt")
-        self.assertTrue("nonexistent.txt" in path)
+from hackerai.config import env_info, get_default_wordlist, load_json_config
 
 
-class TestLogger(unittest.TestCase):
-    """Test centralized logging (tanpa file output berlebihan)."""
-
-    def test_import(self):
-        """Logger module bisa di-import."""
-        from hackerai.logger import setup_logger, get_logger
-
-        logger = get_logger("test")
-        self.assertEqual(logger.name, "test")
-
-    def test_setup_logger_dedup(self):
-        """setup_logger dipanggil dua kali tidak double-handler."""
-        from hackerai.logger import setup_logger
-
-        log1 = setup_logger("test_dedup")
-        count1 = len(log1.handlers)
-        log2 = setup_logger("test_dedup")
-        count2 = len(log2.handlers)
-        self.assertEqual(count1, count2)
+def _import_with(**overrides):
+    environment = os.environ.copy()
+    environment.update(overrides)
+    return subprocess.run(
+        [sys.executable, "-c", "import hackerai.config"],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_environment_summary_is_a_string():
+    assert isinstance(env_info(), str)
+
+
+def test_missing_wordlist_returns_expected_candidate_path():
+    assert "nonexistent.txt" in get_default_wordlist("nonexistent.txt")
+
+
+def test_logger_import_and_name():
+    from hackerai.logger import get_logger
+
+    assert get_logger("test").name == "test"
+
+
+def test_logger_setup_does_not_duplicate_handlers():
+    from hackerai.logger import setup_logger
+
+    first = setup_logger("test_dedup")
+    before = len(first.handlers)
+    second = setup_logger("test_dedup")
+    assert len(second.handlers) == before
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [("HAI_THREADS", "0"), ("HAI_THREADS", "1000000"), ("HAI_TIMEOUT", "nope")],
+)
+def test_invalid_numeric_environment_is_rejected(name, value):
+    result = _import_with(**{name: value})
+    assert result.returncode != 0
+    assert name in result.stderr
+
+
+def test_invalid_log_level_is_rejected():
+    result = _import_with(HAI_LOG_LEVEL="VERBOSE")
+    assert result.returncode != 0
+    assert "HAI_LOG_LEVEL" in result.stderr
+
+
+def test_json_config_requires_an_object(tmp_path: Path):
+    config = tmp_path / "config.json"
+    config.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="JSON object"):
+        load_json_config(str(config))
+
+
+def test_json_config_is_size_bounded(tmp_path: Path):
+    config = tmp_path / "large.json"
+    config.write_text('{"value":"' + ("x" * 1_048_576) + '"}', encoding="utf-8")
+    with pytest.raises(ValueError, match="1 MiB"):
+        load_json_config(str(config))
